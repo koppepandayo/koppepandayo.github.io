@@ -365,6 +365,14 @@ body {
   display: flex;
   align-items: center;
   gap: 18px;
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.buddy-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent2);
 }
 
 .buddy-icon {
@@ -390,13 +398,10 @@ body {
   font-size: 0.95rem;
 }
 
-.buddy-card a {
+.buddy-card p span {
   color: var(--accent2);
   font-weight: 600;
-  text-decoration: none;
 }
-
-.buddy-card a:hover { text-decoration: underline; }
 
 /* Footer */
 .footer {
