@@ -219,7 +219,7 @@
       el.change.style.color = data.lastChange > 0 ? "#33e07a" : data.lastChange < 0 ? "#e05c5c" : "var(--text-dim)";
     }
 
-    el.peak.textContent = `今シーズン最高: ${data.peakTier}`;
+    el.peak.textContent = `歴代最高: ${data.peakTier}`;
   } catch (e) {
     el.card.style.display = "none";
   }
