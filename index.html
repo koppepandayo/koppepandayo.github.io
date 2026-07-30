@@ -86,6 +86,19 @@
         <p>ace取ったら野良の女性にひかれました</p>
       </div>
     </a>
+
+    <div class="card rank-card" id="rank-card">
+      <div class="rank-badge" id="rank-badge">?</div>
+      <div class="rank-info">
+        <span class="rank-label">VALORANT 現在のランク</span>
+        <p class="rank-tier" id="rank-tier">読み込み中...</p>
+        <div class="rank-meta">
+          <span id="rank-rr"></span>
+          <span id="rank-change"></span>
+        </div>
+        <p class="rank-peak" id="rank-peak"></p>
+      </div>
+    </div>
   </section>
 
   <section id="links" class="section">
@@ -154,6 +167,48 @@
   </div>
   <p>&copy; 2026 koppepandayo</p>
 </footer>
+
+<script>
+(async function () {
+  const tierColors = {
+    Iron: "#5c5c5c", Bronze: "#8a5a3b", Silver: "#a8b0b8", Gold: "#d8b13c",
+    Platinum: "#3fa9a0", Diamond: "#b06fe0", Ascendant: "#33e07a",
+    Immortal: "#c23a5e", Radiant: "#f0e28a",
+  };
+  const el = {
+    card: document.getElementById("rank-card"),
+    badge: document.getElementById("rank-badge"),
+    tier: document.getElementById("rank-tier"),
+    rr: document.getElementById("rank-rr"),
+    change: document.getElementById("rank-change"),
+    peak: document.getElementById("rank-peak"),
+  };
+  try {
+    const res = await fetch("https://aged-violet-90ef.koppepandayo07.workers.dev/");
+    if (!res.ok) throw new Error("bad response");
+    const data = await res.json();
+
+    const rankName = (data.tier.match(/^[A-Za-z]+/) || [""])[0];
+    const rankNum = (data.tier.match(/\d+$/) || [""])[0];
+    const color = tierColors[rankName] || "var(--accent2)";
+
+    el.badge.textContent = rankNum;
+    el.badge.style.background = color;
+    el.tier.textContent = data.tier;
+    el.rr.textContent = data.rr + " RR";
+
+    if (typeof data.lastChange === "number") {
+      const sign = data.lastChange > 0 ? "+" : "";
+      el.change.textContent = `直近 ${sign}${data.lastChange}`;
+      el.change.style.color = data.lastChange > 0 ? "#33e07a" : data.lastChange < 0 ? "#e05c5c" : "var(--text-dim)";
+    }
+
+    el.peak.textContent = `今シーズン最高: ${data.peakTier}`;
+  } catch (e) {
+    el.card.style.display = "none";
+  }
+})();
+</script>
 
 </body>
 </html>
