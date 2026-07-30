@@ -88,7 +88,10 @@
     </a>
 
     <div class="card rank-card" id="rank-card">
-      <div class="rank-badge" id="rank-badge">?</div>
+      <div class="rank-badge" id="rank-badge">
+        <img id="rank-badge-img" alt="" hidden>
+        <span id="rank-badge-fallback">?</span>
+      </div>
       <div class="rank-info">
         <span class="rank-label">VALORANT 現在のランク</span>
         <p class="rank-tier" id="rank-tier">読み込み中...</p>
@@ -126,7 +129,7 @@
   <section id="about" class="section">
     <h2 class="section-title"><span class="section-num">04</span> About</h2>
     <div class="card about-card">
-      <p>ゲーム周りのちょっとしたものを作るのが好きです。気が向いたら更新します。</p>
+      <p>普段はVALORANTとMinecraftをやってます。ゲーム周りのちょっとしたものを作るのも好きで、気が向いたら更新します。</p>
     </div>
     <a class="card buddy-card" href="https://claude.ai" target="_blank" rel="noopener">
       <div class="buddy-icon">✦</div>
@@ -178,6 +181,8 @@
   const el = {
     card: document.getElementById("rank-card"),
     badge: document.getElementById("rank-badge"),
+    badgeImg: document.getElementById("rank-badge-img"),
+    badgeFallback: document.getElementById("rank-badge-fallback"),
     tier: document.getElementById("rank-tier"),
     rr: document.getElementById("rank-rr"),
     change: document.getElementById("rank-change"),
@@ -190,10 +195,21 @@
 
     const rankName = (data.tier.match(/^[A-Za-z]+/) || [""])[0];
     const rankNum = (data.tier.match(/\d+$/) || [""])[0];
-    const color = tierColors[rankName] || "var(--accent2)";
+    const color = data.tierColor || tierColors[rankName] || "var(--accent2)";
 
-    el.badge.textContent = rankNum;
     el.badge.style.background = color;
+    if (data.tierIconUrl) {
+      el.badgeImg.src = data.tierIconUrl;
+      el.badgeImg.onload = () => {
+        el.badgeImg.hidden = false;
+        el.badgeFallback.hidden = true;
+      };
+      el.badgeImg.onerror = () => {
+        el.badgeFallback.textContent = rankNum;
+      };
+    } else {
+      el.badgeFallback.textContent = rankNum;
+    }
     el.tier.textContent = data.tier;
     el.rr.textContent = data.rr + " RR";
 
