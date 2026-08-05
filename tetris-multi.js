@@ -88,9 +88,11 @@
         updatePanels();
         break;
       case "countdown":
+        phase = "countdown";
         showCountdown(msg.seconds);
         break;
       case "match-start":
+        phase = "playing";
         hideCountdown();
         beginMyMatch(msg.players);
         break;
