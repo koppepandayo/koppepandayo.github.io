@@ -110,6 +110,30 @@
   display: none;
 }
 
+.clear-toast {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: rgba(124, 92, 255, 0.9);
+  color: #fff;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 2;
+}
+
+.clear-toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
 .overlay-message {
   display: flex;
   flex-direction: column;
