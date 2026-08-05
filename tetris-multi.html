@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tetris Multi | koppepandayo</title>
+<meta name="description" content="koppepandayoのサイトで遊べるTetrisマルチプレイ（最大10人バトルロイヤル）">
+<link rel="icon" href="assets/koppecat.jpg">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="tetris.css">
+<link rel="stylesheet" href="tetris-multi.css">
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<header class="hero tetris-hero">
+  <nav class="nav">
+    <a class="nav-logo" href="index.html">koppepandayo</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="tetris.html">ソロ</a>
+    </div>
+  </nav>
+</header>
+
+<main class="tetris-main">
+  <h1 class="tetris-title">TETRIS BATTLE</h1>
+  <p id="conn-status" class="conn-status">接続中...</p>
+
+  <!-- Lobby: name entry + join -->
+  <section id="lobby-panel" class="card multi-panel hidden">
+    <p class="multi-phase-label" id="phase-label">ロビー</p>
+    <div class="lobby-join">
+      <input id="name-input" type="text" maxlength="20" placeholder="名前 (未入力はGuest)">
+      <button id="join-btn" class="btn btn-primary">参加</button>
+    </div>
+    <div class="player-list-wrap">
+      <p class="panel-label">プレイヤー (<span id="player-count">0</span>/10)</p>
+      <ul id="player-list" class="player-list"></ul>
+    </div>
+    <div class="lobby-actions hidden" id="lobby-actions">
+      <button id="start-match-btn" class="btn btn-primary">試合開始</button>
+    </div>
+  </section>
+
+  <!-- Waiting to join next match (spectating while a match is live) -->
+  <section id="spectate-panel" class="card multi-panel hidden">
+    <p class="multi-phase-label">試合進行中 - 観戦中</p>
+    <p class="spectate-note">今の試合が終わると次の試合が始まります。</p>
+    <button id="queue-btn" class="btn btn-primary">次の試合に参加 (inQueue)</button>
+    <p id="queue-status" class="queue-status"></p>
+  </section>
+
+  <!-- Countdown overlay -->
+  <div id="countdown-overlay" class="countdown-overlay hidden">
+    <p id="countdown-text">3</p>
+  </div>
+
+  <!-- Match end ranking -->
+  <section id="ranking-panel" class="card multi-panel hidden">
+    <p class="multi-phase-label">試合結果</p>
+    <ol id="ranking-list" class="ranking-list"></ol>
+  </section>
+
+  <!-- Battle layout: own board + opponents -->
+  <div id="battle-layout" class="battle-layout hidden">
+    <div class="tetris-side">
+      <div class="card tetris-panel">
+        <span class="panel-label">HOLD</span>
+        <canvas id="hold-canvas" width="72" height="72"></canvas>
+      </div>
+      <div class="card tetris-panel">
+        <span class="panel-label">SCORE</span>
+        <p id="score" class="panel-value">0</p>
+      </div>
+      <div class="card tetris-panel">
+        <span class="panel-label">NEXT</span>
+        <canvas id="next-canvas" width="72" height="220"></canvas>
+      </div>
+    </div>
+
+    <div class="tetris-board-wrap multi-board-wrap">
+      <canvas id="board-canvas" width="300" height="600"></canvas>
+      <div id="clear-toast" class="clear-toast"></div>
+      <div id="you-eliminated" class="tetris-overlay hidden">
+        <div class="overlay-message">
+          <p>K.O.</p>
+          <p class="overlay-score" id="you-rank"></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="opponents-grid" id="opponents-grid"></div>
+  </div>
+</main>
+
+<script src="tetris-engine.js"></script>
+<script src="tetris-multi.js"></script>
+</body>
+</html>
