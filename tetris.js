@@ -127,8 +127,8 @@
     return true;
   }
 
-  function tryRotate() {
-    const rot = (current.rot + 1) % 4;
+  function tryRotate(dir) {
+    const rot = (current.rot + dir + 4) % 4;
     const kicks = [0, -1, 1, -2, 2];
     for (const k of kicks) {
       const rotated = { ...current, rot, x: current.x + k };
@@ -366,7 +366,8 @@
       case "left": tryMove(-1, 0); resetLockIfGrounded(); break;
       case "right": tryMove(1, 0); resetLockIfGrounded(); break;
       case "down": if (tryMove(0, 1)) score += 1; break;
-      case "rotate": tryRotate(); break;
+      case "rotate": tryRotate(1); break;
+      case "rotate-ccw": tryRotate(-1); break;
       case "drop": hardDrop(); break;
       case "hold": holdSwap(); break;
     }
@@ -374,12 +375,13 @@
   }
 
   document.addEventListener("keydown", (e) => {
-    if (e.repeat && ["ArrowUp", "x", "X", " ", "c", "C", "p", "P"].includes(e.key)) return;
+    if (e.repeat && ["ArrowUp", "x", "X", "z", "Z", " ", "c", "C", "p", "P"].includes(e.key)) return;
     switch (e.key) {
       case "ArrowLeft": handleAction("left"); e.preventDefault(); break;
       case "ArrowRight": handleAction("right"); e.preventDefault(); break;
       case "ArrowDown": handleAction("down"); e.preventDefault(); break;
       case "ArrowUp": case "x": case "X": handleAction("rotate"); e.preventDefault(); break;
+      case "z": case "Z": handleAction("rotate-ccw"); e.preventDefault(); break;
       case " ": handleAction("drop"); e.preventDefault(); break;
       case "c": case "C": handleAction("hold"); e.preventDefault(); break;
       case "p": case "P": togglePause(); e.preventDefault(); break;
