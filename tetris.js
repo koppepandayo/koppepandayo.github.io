@@ -1,93 +1,9 @@
 (function () {
   "use strict";
 
-  const COLS = 10;
-  const ROWS = 20;
   const CELL = 30;
-  const DAS = 130; // ms held before auto-repeat starts
-  const ARR = 20; // ms between auto-repeat steps
-  const SOFT_DROP_ARR = 20; // ms between soft-drop steps while held
-
-  const COLORS = {
-    I: "#33e0ff",
-    O: "#f0d048",
-    T: "#b06fe0",
-    S: "#4fd67a",
-    Z: "#e0555f",
-    J: "#4a7fe0",
-    L: "#f0a048",
-  };
-
-  const SHAPES = {
-    I: [
-      [[0, 1], [1, 1], [2, 1], [3, 1]],
-      [[2, 0], [2, 1], [2, 2], [2, 3]],
-      [[0, 2], [1, 2], [2, 2], [3, 2]],
-      [[1, 0], [1, 1], [1, 2], [1, 3]],
-    ],
-    O: [
-      [[1, 0], [2, 0], [1, 1], [2, 1]],
-      [[1, 0], [2, 0], [1, 1], [2, 1]],
-      [[1, 0], [2, 0], [1, 1], [2, 1]],
-      [[1, 0], [2, 0], [1, 1], [2, 1]],
-    ],
-    T: [
-      [[1, 0], [0, 1], [1, 1], [2, 1]],
-      [[1, 0], [1, 1], [2, 1], [1, 2]],
-      [[0, 1], [1, 1], [2, 1], [1, 2]],
-      [[1, 0], [0, 1], [1, 1], [1, 2]],
-    ],
-    S: [
-      [[1, 0], [2, 0], [0, 1], [1, 1]],
-      [[1, 0], [1, 1], [2, 1], [2, 2]],
-      [[1, 1], [2, 1], [0, 2], [1, 2]],
-      [[0, 0], [0, 1], [1, 1], [1, 2]],
-    ],
-    Z: [
-      [[0, 0], [1, 0], [1, 1], [2, 1]],
-      [[2, 0], [1, 1], [2, 1], [1, 2]],
-      [[0, 1], [1, 1], [1, 2], [2, 2]],
-      [[1, 0], [0, 1], [1, 1], [0, 2]],
-    ],
-    J: [
-      [[0, 0], [0, 1], [1, 1], [2, 1]],
-      [[1, 0], [2, 0], [1, 1], [1, 2]],
-      [[0, 1], [1, 1], [2, 1], [2, 2]],
-      [[1, 0], [1, 1], [0, 2], [1, 2]],
-    ],
-    L: [
-      [[2, 0], [0, 1], [1, 1], [2, 1]],
-      [[1, 0], [1, 1], [1, 2], [2, 2]],
-      [[0, 1], [1, 1], [2, 1], [0, 2]],
-      [[0, 0], [1, 0], [1, 1], [1, 2]],
-    ],
-  };
-
-  const PIECE_NAMES = Object.keys(SHAPES);
-
-  // SRS wall kick offsets, [dx, dy] with dy positive = UP (official SRS convention).
-  // Applied to our grid (dy positive = down) by negating dy on use.
-  const KICKS_JLSTZ = {
-    "0-1": [[0, 0], [-1, 0], [-1, 1], [0, -2], [-1, -2]],
-    "1-0": [[0, 0], [1, 0], [1, -1], [0, 2], [1, 2]],
-    "1-2": [[0, 0], [1, 0], [1, -1], [0, 2], [1, 2]],
-    "2-1": [[0, 0], [-1, 0], [-1, 1], [0, -2], [-1, -2]],
-    "2-3": [[0, 0], [1, 0], [1, 1], [0, -2], [1, -2]],
-    "3-2": [[0, 0], [-1, 0], [-1, -1], [0, 2], [-1, 2]],
-    "3-0": [[0, 0], [-1, 0], [-1, -1], [0, 2], [-1, 2]],
-    "0-3": [[0, 0], [1, 0], [1, 1], [0, -2], [1, -2]],
-  };
-
-  const KICKS_I = {
-    "0-1": [[0, 0], [-2, 0], [1, 0], [-2, -1], [1, 2]],
-    "1-0": [[0, 0], [2, 0], [-1, 0], [2, 1], [-1, -2]],
-    "1-2": [[0, 0], [-1, 0], [2, 0], [-1, 2], [2, -1]],
-    "2-1": [[0, 0], [1, 0], [-2, 0], [1, -2], [-2, 1]],
-    "2-3": [[0, 0], [2, 0], [-1, 0], [2, 1], [-1, -2]],
-    "3-2": [[0, 0], [-2, 0], [1, 0], [-2, -1], [1, 2]],
-    "3-0": [[0, 0], [1, 0], [-2, 0], [1, -2], [-2, 1]],
-    "0-3": [[0, 0], [-1, 0], [2, 0], [-1, 2], [2, -1]],
-  };
+  const COLORS = TetrisEngine.COLORS;
+  const SHAPES = TetrisEngine.SHAPES;
 
   const boardCanvas = document.getElementById("board-canvas");
   const boardCtx = boardCanvas.getContext("2d");
@@ -110,213 +26,22 @@
   let highScore = Number(localStorage.getItem(HIGH_SCORE_KEY)) || 0;
   highScoreEl.textContent = highScore;
 
-  let grid, bag, nextQueue, current, holdPiece, canHold;
-  let score, level, lines, dropInterval, dropAccumulator, lockTimer, lockResets;
-  let running, paused, gameOver, lastTime;
-  let lastActionWasRotate, lastKickIndex, combo, backToBack;
   let toastTimer;
+  let lastTime;
 
-  // input state
-  const keysHeld = { left: false, right: false };
-  let dasDirection = null;
-  let dasElapsed = 0;
-  let arrElapsed = 0;
-  let softDropHeld = false;
-  let softDropElapsed = 0;
-
-  function makeGrid() {
-    return Array.from({ length: ROWS }, () => Array(COLS).fill(null));
-  }
-
-  function refillBag() {
-    const b = PIECE_NAMES.slice();
-    for (let i = b.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [b[i], b[j]] = [b[j], b[i]];
-    }
-    return b;
-  }
-
-  function nextFromBag() {
-    if (bag.length === 0) bag = refillBag();
-    return bag.pop();
-  }
-
-  function spawnPiece(name) {
-    return { name, rot: 0, x: 3, y: -1 };
-  }
-
-  function cells(piece) {
-    return SHAPES[piece.name][piece.rot].map(([dx, dy]) => [piece.x + dx, piece.y + dy]);
-  }
-
-  function collides(piece) {
-    for (const [x, y] of cells(piece)) {
-      if (x < 0 || x >= COLS || y >= ROWS) return true;
-      if (y >= 0 && grid[y][x]) return true;
-    }
-    return false;
-  }
-
-  function tryMove(dx, dy) {
-    const moved = { ...current, x: current.x + dx, y: current.y + dy };
-    if (collides(moved)) return false;
-    current = moved;
-    lastActionWasRotate = false;
-    return true;
-  }
-
-  function tryRotate(dir) {
-    const rot = (current.rot + dir + 4) % 4;
-    if (current.name === "O") {
-      current = { ...current, rot };
-      lastActionWasRotate = true;
-      lastKickIndex = 0;
-      return true;
-    }
-    const table = current.name === "I" ? KICKS_I : KICKS_JLSTZ;
-    const key = `${current.rot}-${rot}`;
-    const kicks = table[key] || [[0, 0]];
-    for (let i = 0; i < kicks.length; i++) {
-      const [kx, ky] = kicks[i];
-      const rotated = { ...current, rot, x: current.x + kx, y: current.y - ky };
-      if (!collides(rotated)) {
-        current = rotated;
-        lastActionWasRotate = true;
-        lastKickIndex = i;
-        resetLockIfGrounded();
-        return true;
-      }
-    }
-    return false;
-  }
-
-  function resetLockIfGrounded() {
-    const grounded = collides({ ...current, y: current.y + 1 });
-    if (grounded && lockTimer !== null && lockResets < 15) {
-      lockTimer = 0;
-      lockResets++;
-    }
-  }
-
-  function isBlocked(x, y) {
-    if (x < 0 || x >= COLS || y >= ROWS) return true;
-    if (y < 0) return false;
-    return !!grid[y][x];
-  }
-
-  function detectTSpin() {
-    if (current.name !== "T" || !lastActionWasRotate) return null;
-
-    const topLeft = isBlocked(current.x, current.y);
-    const topRight = isBlocked(current.x + 2, current.y);
-    const bottomLeft = isBlocked(current.x, current.y + 2);
-    const bottomRight = isBlocked(current.x + 2, current.y + 2);
-    const total = [topLeft, topRight, bottomLeft, bottomRight].filter(Boolean).length;
-    if (total < 3) return null;
-
-    let frontCount;
-    switch (current.rot) {
-      case 0: frontCount = [topLeft, topRight].filter(Boolean).length; break;
-      case 1: frontCount = [topRight, bottomRight].filter(Boolean).length; break;
-      case 2: frontCount = [bottomLeft, bottomRight].filter(Boolean).length; break;
-      default: frontCount = [topLeft, bottomLeft].filter(Boolean).length; break;
-    }
-
-    if (frontCount === 2) return "full";
-    if (lastKickIndex === 4) return "full"; // TST kick exception
-    return "mini";
-  }
-
-  function hardDrop() {
-    let dist = 0;
-    while (!collides({ ...current, y: current.y + 1 })) {
-      current = { ...current, y: current.y + 1 };
-      dist++;
-    }
-    score += dist * 2;
-    lockPiece();
-  }
-
-  function lockPiece() {
-    const tspin = detectTSpin();
-    for (const [x, y] of cells(current)) {
-      if (y < 0) {
-        endGame();
-        return;
-      }
-      grid[y][x] = current.name;
-    }
-    clearLines(tspin);
-    spawnNext();
-    canHold = true;
-    lockTimer = null;
-    lockResets = 0;
-  }
-
-  const CLEAR_NAMES = ["", "SINGLE", "DOUBLE", "TRIPLE"];
-
-  function clearLines(tspin) {
-    let cleared = 0;
-    for (let y = ROWS - 1; y >= 0; y--) {
-      if (grid[y].every((c) => c)) {
-        grid.splice(y, 1);
-        grid.unshift(Array(COLS).fill(null));
-        cleared++;
-        y++;
-      }
-    }
-
-    let gained = 0;
-    let label = null;
-
-    if (tspin) {
-      const table = { "full:0": 400, "full:1": 800, "full:2": 1200, "full:3": 1600, "mini:0": 100, "mini:1": 200 };
-      gained = (table[`${tspin}:${cleared}`] || 0) * level;
-      label = (tspin === "mini" ? "T-SPIN MINI" : "T-SPIN") + (cleared ? " " + CLEAR_NAMES[cleared] : "");
-    } else if (cleared > 0) {
-      const table = { 1: 100, 2: 300, 3: 500, 4: 800 };
-      gained = (table[cleared] || 0) * level;
-      label = cleared === 4 ? "TETRIS" : CLEAR_NAMES[cleared];
-    }
-
-    if (cleared > 0) {
-      const difficult = cleared === 4 || tspin !== null;
-      if (difficult) {
-        if (backToBack) {
-          gained = Math.floor(gained * 1.5);
-          label += " B2B";
-        }
-        backToBack = true;
-      } else {
-        backToBack = false;
-      }
-
-      combo++;
-      if (combo > 0) {
-        gained += 50 * combo * level;
-        label += ` COMBO x${combo + 1}`;
-      }
-    } else {
-      combo = -1;
-    }
-
-    if (gained > 0) score += gained;
-    if (label) showToast(label);
-
-    if (cleared > 0) {
-      lines += cleared;
-      const newLevel = Math.floor(lines / 10) + 1;
-      if (newLevel !== level) {
-        level = newLevel;
-        dropInterval = Math.max(50, Math.pow(0.8 - (level - 1) * 0.007, level - 1) * 1000);
-      }
-    }
-
-    scoreEl.textContent = score;
-    levelEl.textContent = level;
-    linesEl.textContent = lines;
-  }
+  const engine = new TetrisEngine({
+    onLock(self, info) {
+      if (info.label) showToast(info.label);
+    },
+    onGameOver(self) {
+      endGame(self);
+    },
+    onChange(self) {
+      scoreEl.textContent = self.score;
+      levelEl.textContent = self.level;
+      linesEl.textContent = self.lines;
+    },
+  });
 
   function showToast(text) {
     toastEl.textContent = text;
@@ -327,42 +52,14 @@
     toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1200);
   }
 
-  function spawnNext() {
-    current = spawnPiece(nextQueue.shift());
-    nextQueue.push(nextFromBag());
-    lastActionWasRotate = false;
-    lastKickIndex = -1;
-    drawNext();
-    if (collides(current)) endGame();
-  }
-
-  function holdSwap() {
-    if (!canHold) return;
-    canHold = false;
-    if (holdPiece === null) {
-      holdPiece = current.name;
-      spawnNext();
-    } else {
-      const tmp = holdPiece;
-      holdPiece = current.name;
-      current = spawnPiece(tmp);
-      lastActionWasRotate = false;
-    }
-    drawHold();
-  }
-
-  function endGame() {
-    running = false;
-    gameOver = true;
-    dasDirection = null;
-    softDropHeld = false;
-    if (score > highScore) {
-      highScore = score;
+  function endGame(self) {
+    if (self.score > highScore) {
+      highScore = self.score;
       localStorage.setItem(HIGH_SCORE_KEY, String(highScore));
       highScoreEl.textContent = highScore;
     }
     overlayText.textContent = "GAME OVER";
-    overlayScore.textContent = `スコア: ${score}`;
+    overlayScore.textContent = `スコア: ${self.score}`;
     startBtn.textContent = "もう一度";
     overlay.classList.remove("hidden");
   }
@@ -378,23 +75,22 @@
     boardCtx.fillStyle = "#0b0b10";
     boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
 
-    for (let y = 0; y < ROWS; y++) {
-      for (let x = 0; x < COLS; x++) {
-        if (grid[y][x]) drawCell(boardCtx, x, y, CELL, COLORS[grid[y][x]]);
+    for (let y = 0; y < TetrisEngine.ROWS; y++) {
+      for (let x = 0; x < TetrisEngine.COLS; x++) {
+        if (engine.grid[y][x]) drawCell(boardCtx, x, y, CELL, COLORS[engine.grid[y][x]] || "#666");
       }
     }
 
-    if (current) {
-      const ghost = { ...current };
-      while (!collides({ ...ghost, y: ghost.y + 1 })) ghost.y++;
+    if (engine.current) {
+      const ghost = engine.ghostPiece();
       boardCtx.globalAlpha = 0.25;
-      for (const [x, y] of cells(ghost)) {
-        if (y >= 0) drawCell(boardCtx, x, y, CELL, COLORS[current.name]);
+      for (const [x, y] of engine.cells(ghost)) {
+        if (y >= 0) drawCell(boardCtx, x, y, CELL, COLORS[engine.current.name]);
       }
       boardCtx.globalAlpha = 1;
 
-      for (const [x, y] of cells(current)) {
-        if (y >= 0) drawCell(boardCtx, x, y, CELL, COLORS[current.name]);
+      for (const [x, y] of engine.cells(engine.current)) {
+        if (y >= 0) drawCell(boardCtx, x, y, CELL, COLORS[engine.current.name]);
       }
     }
   }
@@ -418,7 +114,7 @@
     nextCtx.fillStyle = "#0b0b10";
     nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
     const slotH = nextCanvas.height / 5;
-    nextQueue.slice(0, 5).forEach((name, i) => {
+    engine.nextQueue.slice(0, 5).forEach((name, i) => {
       drawPieceInBox(nextCtx, name, 0, i * slotH, nextCanvas.width, slotH);
     });
   }
@@ -426,49 +122,25 @@
   function drawHold() {
     holdCtx.fillStyle = "#0b0b10";
     holdCtx.fillRect(0, 0, holdCanvas.width, holdCanvas.height);
-    drawPieceInBox(holdCtx, holdPiece, 0, 0, holdCanvas.width, holdCanvas.height);
+    drawPieceInBox(holdCtx, engine.holdPiece, 0, 0, holdCanvas.width, holdCanvas.height);
   }
 
-  function resetGame() {
-    grid = makeGrid();
-    bag = refillBag();
-    nextQueue = [nextFromBag(), nextFromBag(), nextFromBag(), nextFromBag(), nextFromBag()];
-    holdPiece = null;
-    canHold = true;
-    score = 0;
-    level = 1;
-    lines = 0;
-    dropInterval = 1000;
-    dropAccumulator = 0;
-    lockTimer = null;
-    lockResets = 0;
-    gameOver = false;
-    combo = -1;
-    backToBack = false;
-    lastActionWasRotate = false;
-    lastKickIndex = -1;
-    dasDirection = null;
-    softDropHeld = false;
-    scoreEl.textContent = "0";
-    levelEl.textContent = "1";
-    linesEl.textContent = "0";
-    spawnNext();
-    drawHold();
+  function render() {
     drawBoard();
+    drawNext();
+    drawHold();
   }
 
   function startGame() {
-    resetGame();
-    running = true;
-    paused = false;
+    engine.start();
     overlay.classList.add("hidden");
+    render();
     lastTime = performance.now();
     requestAnimationFrame(loop);
   }
 
   function togglePause() {
-    if (!running) return;
-    paused = !paused;
+    const paused = engine.togglePause();
     if (paused) {
       overlayText.textContent = "PAUSED";
       overlayScore.textContent = "";
@@ -482,99 +154,29 @@
   }
 
   function loop(time) {
-    if (!running || paused) return;
+    if (!engine.running || engine.paused) return;
     const dt = time - lastTime;
     lastTime = time;
-
-    if (dasDirection) {
-      dasElapsed += dt;
-      if (dasElapsed >= DAS) {
-        arrElapsed += dt;
-        while (arrElapsed >= ARR) {
-          arrElapsed -= ARR;
-          const moved = tryMove(dasDirection === "left" ? -1 : 1, 0);
-          resetLockIfGrounded();
-          if (!moved) break;
-        }
-      }
-    }
-
-    if (softDropHeld) {
-      softDropElapsed += dt;
-      while (softDropElapsed >= SOFT_DROP_ARR) {
-        softDropElapsed -= SOFT_DROP_ARR;
-        if (tryMove(0, 1)) score += 1;
-      }
-    }
-
-    const grounded = collides({ ...current, y: current.y + 1 });
-    if (grounded) {
-      if (lockTimer === null) lockTimer = 0;
-      lockTimer += dt;
-      if (lockTimer >= 500) {
-        lockPiece();
-      }
-    } else {
-      dropAccumulator += dt;
-      if (dropAccumulator >= dropInterval) {
-        dropAccumulator = 0;
-        tryMove(0, 1);
-      }
-      lockTimer = null;
-      lockResets = 0;
-    }
-
-    scoreEl.textContent = score;
-    drawBoard();
-    requestAnimationFrame(loop);
+    engine.update(dt);
+    render();
+    if (engine.running) requestAnimationFrame(loop);
   }
 
   function handleAction(action) {
-    if (!running || paused) return;
-    switch (action) {
-      case "left": tryMove(-1, 0); resetLockIfGrounded(); break;
-      case "right": tryMove(1, 0); resetLockIfGrounded(); break;
-      case "down": if (tryMove(0, 1)) score += 1; break;
-      case "rotate": tryRotate(1); break;
-      case "rotate-ccw": tryRotate(-1); break;
-      case "drop": hardDrop(); break;
-      case "hold": holdSwap(); break;
-    }
-    scoreEl.textContent = score;
-  }
-
-  function startDas(dir) {
-    keysHeld[dir] = true;
-    dasDirection = dir;
-    dasElapsed = 0;
-    arrElapsed = 0;
-    handleAction(dir);
-  }
-
-  function stopDas(dir) {
-    keysHeld[dir] = false;
-    if (dasDirection !== dir) return;
-    if (dir === "left" && keysHeld.right) {
-      dasDirection = "right";
-    } else if (dir === "right" && keysHeld.left) {
-      dasDirection = "left";
-    } else {
-      dasDirection = null;
-    }
-    dasElapsed = 0;
-    arrElapsed = 0;
+    engine.handleAction(action);
+    render();
   }
 
   document.addEventListener("keydown", (e) => {
-    if (!running || paused) {
+    if (!engine.running || engine.paused) {
       if (e.key === "p" || e.key === "P") togglePause();
       return;
     }
     switch (e.key) {
-      case "ArrowLeft": if (!e.repeat) startDas("left"); e.preventDefault(); break;
-      case "ArrowRight": if (!e.repeat) startDas("right"); e.preventDefault(); break;
+      case "ArrowLeft": if (!e.repeat) { engine.startDas("left"); render(); } e.preventDefault(); break;
+      case "ArrowRight": if (!e.repeat) { engine.startDas("right"); render(); } e.preventDefault(); break;
       case "ArrowDown":
-        if (!e.repeat) { softDropHeld = true; softDropElapsed = SOFT_DROP_ARR; handleAction("down"); }
+        if (!e.repeat) { engine.softDropHeld = true; engine.softDropElapsed = 20; handleAction("down"); }
         e.preventDefault();
         break;
       case "ArrowUp": case "x": case "X": if (!e.repeat) handleAction("rotate"); e.preventDefault(); break;
@@ -587,17 +189,17 @@
 
   document.addEventListener("keyup", (e) => {
     switch (e.key) {
-      case "ArrowLeft": stopDas("left"); break;
-      case "ArrowRight": stopDas("right"); break;
-      case "ArrowDown": softDropHeld = false; break;
+      case "ArrowLeft": engine.stopDas("left"); break;
+      case "ArrowRight": engine.stopDas("right"); break;
+      case "ArrowDown": engine.softDropHeld = false; break;
     }
   });
 
   window.addEventListener("blur", () => {
-    dasDirection = null;
-    softDropHeld = false;
-    keysHeld.left = false;
-    keysHeld.right = false;
+    engine.dasDirection = null;
+    engine.softDropHeld = false;
+    engine.keysHeld.left = false;
+    engine.keysHeld.right = false;
   });
 
   document.querySelectorAll(".tetris-touch button").forEach((btn) => {
@@ -605,7 +207,7 @@
   });
 
   startBtn.addEventListener("click", () => {
-    if (paused) {
+    if (engine.paused) {
       togglePause();
     } else {
       startGame();
@@ -613,6 +215,5 @@
   });
 
   overlayText.textContent = "TETRIS";
-  grid = makeGrid();
-  drawBoard();
+  render();
 })();
