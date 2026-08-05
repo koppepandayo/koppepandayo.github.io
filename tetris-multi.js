@@ -126,7 +126,10 @@
     lobbyPanel.classList.add("hidden");
     spectatePanel.classList.add("hidden");
     battleLayout.classList.add("hidden");
-    rankingPanel.classList.add("hidden");
+    // rankingPanel is intentionally left alone here: showRanking() manages
+    // its own visibility with a timeout, independent of phase transitions
+    // (the server moves phase back to "lobby" right after match-end, and
+    // that state broadcast used to blow the ranking panel away instantly).
 
     if (phase === "lobby") {
       inThisMatch = false;
@@ -149,6 +152,8 @@
   }
 
   function showCountdown(seconds) {
+    clearTimeout(rankingTimer);
+    rankingPanel.classList.add("hidden");
     countdownOverlay.classList.remove("hidden");
     countdownText.textContent = seconds > 0 ? String(seconds) : "GO!";
   }
