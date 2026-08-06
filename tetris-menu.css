@@ -1,0 +1,142 @@
+.menu-main {
+  padding-top: 40px;
+}
+
+.menu-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  width: 100%;
+  max-width: 720px;
+}
+
+.menu-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 20px;
+  text-decoration: none;
+  color: var(--text);
+  text-align: center;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.menu-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent2);
+}
+
+.menu-card-icon {
+  font-size: 1.8rem;
+  color: var(--accent2);
+}
+
+.menu-card-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.menu-card-desc {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
+.account-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 8, 12, 0.8);
+  backdrop-filter: blur(2px);
+  padding: 20px;
+}
+
+.account-modal.hidden {
+  display: none;
+}
+
+.account-modal-inner {
+  width: 100%;
+  max-width: 380px;
+  padding: 24px;
+}
+
+.account-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.account-close {
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.account-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.account-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.account-row input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.account-divider {
+  height: 1px;
+  background: var(--border);
+  margin-bottom: 20px;
+}
+
+.account-note {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+.discord-btn {
+  width: 100%;
+  border-color: #5865f2;
+  color: #b9c0ff;
+}
+
+.discord-btn:hover {
+  border-color: #5865f2;
+  background: rgba(88, 101, 242, 0.12);
+}
+
+.discord-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.discord-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}

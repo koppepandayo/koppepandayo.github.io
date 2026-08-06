@@ -214,6 +214,6 @@
     }
   });
 
-  overlayText.textContent = "TETRIS";
+  overlayText.textContent = "Ready?";
   render();
 })();

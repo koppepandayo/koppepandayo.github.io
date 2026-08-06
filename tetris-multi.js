@@ -404,5 +404,14 @@
     send({ type: "queue" });
   });
 
+  try {
+    const account = JSON.parse(localStorage.getItem("koppepandayo-tetris-account"));
+    if (account) {
+      nameInput.value = (account.discord && account.discord.username) || account.username || "";
+    }
+  } catch (e) {
+    // ignore malformed/missing account data
+  }
+
   connect();
 })();

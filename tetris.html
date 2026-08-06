@@ -8,6 +8,7 @@
 <link rel="icon" href="assets/koppecat.jpg">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="tetris.css">
+<link rel="stylesheet" href="tetris-menu.css">
 </head>
 <body>
 
@@ -19,81 +20,63 @@
     <a class="nav-logo" href="index.html">koppepandayo</a>
     <div class="nav-links">
       <a href="index.html">Home</a>
-      <a href="tetris-multi.html">マルチプレイ</a>
       <a href="index.html#links">Links</a>
     </div>
   </nav>
 </header>
 
-<main class="tetris-main">
+<main class="tetris-main menu-main">
   <h1 class="tetris-title">TETRIS</h1>
 
-  <div class="tetris-layout">
-    <div class="tetris-side">
-      <div class="card tetris-panel">
-        <span class="panel-label">HOLD</span>
-        <canvas id="hold-canvas" width="96" height="96"></canvas>
-      </div>
-      <div class="card tetris-panel">
-        <span class="panel-label">SCORE</span>
-        <p id="score" class="panel-value">0</p>
-      </div>
-      <div class="card tetris-panel">
-        <span class="panel-label">LEVEL</span>
-        <p id="level" class="panel-value">1</p>
-      </div>
-      <div class="card tetris-panel">
-        <span class="panel-label">LINES</span>
-        <p id="lines" class="panel-value">0</p>
-      </div>
-      <div class="card tetris-panel">
-        <span class="panel-label">HIGH SCORE</span>
-        <p id="high-score" class="panel-value">0</p>
-      </div>
-    </div>
-
-    <div class="tetris-board-wrap">
-      <canvas id="board-canvas" width="300" height="600"></canvas>
-      <div id="clear-toast" class="clear-toast"></div>
-      <div id="overlay" class="tetris-overlay">
-        <div class="overlay-message">
-          <p id="overlay-text">TETRIS</p>
-          <p id="overlay-score"></p>
-        </div>
-        <button id="start-btn" class="btn btn-primary">はじめる</button>
-      </div>
-    </div>
-
-    <div class="tetris-side">
-      <div class="card tetris-panel">
-        <span class="panel-label">NEXT</span>
-        <canvas id="next-canvas" width="96" height="300"></canvas>
-      </div>
-      <div class="card tetris-panel tetris-help">
-        <span class="panel-label">操作</span>
-        <p>← → : 移動</p>
-        <p>↓ : ソフトドロップ</p>
-        <p>↑ / X : 回転</p>
-        <p>Z : 逆回転</p>
-        <p>Space : ハードドロップ</p>
-        <p>C : ホールド</p>
-        <p>P : ポーズ</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="tetris-touch">
-    <button data-action="left" aria-label="左に移動">◀</button>
-    <button data-action="rotate-ccw" aria-label="逆回転">⟲</button>
-    <button data-action="rotate" aria-label="回転">⟳</button>
-    <button data-action="right" aria-label="右に移動">▶</button>
-    <button data-action="down" aria-label="ソフトドロップ">▼</button>
-    <button data-action="drop" aria-label="ハードドロップ">⇓</button>
-    <button data-action="hold" aria-label="ホールド">H</button>
+  <div class="menu-cards">
+    <a class="card menu-card" href="tetris-solo.html">
+      <span class="menu-card-icon">▮</span>
+      <span class="menu-card-title">ソロプレイ</span>
+      <span class="menu-card-desc">一人で遊ぶ。ハイスコア更新を目指そう</span>
+    </a>
+    <a class="card menu-card" href="tetris-multi.html">
+      <span class="menu-card-icon">▦</span>
+      <span class="menu-card-title">マルチプレイ</span>
+      <span class="menu-card-desc">最大10人のバトルロイヤル</span>
+    </a>
+    <button class="card menu-card" id="account-btn" type="button">
+      <span class="menu-card-icon">◈</span>
+      <span class="menu-card-title">アカウント設定</span>
+      <span class="menu-card-desc" id="account-summary">ゲスト</span>
+    </button>
   </div>
 </main>
 
-<script src="tetris-engine.js"></script>
-<script src="tetris.js"></script>
+<div id="account-modal" class="account-modal hidden">
+  <div class="card account-modal-inner">
+    <div class="account-modal-header">
+      <p class="multi-phase-label">アカウント設定</p>
+      <button id="account-close" class="account-close" aria-label="閉じる">✕</button>
+    </div>
+
+    <label class="account-label" for="username-input">ユーザー名</label>
+    <div class="account-row">
+      <input id="username-input" type="text" maxlength="20" placeholder="Guest">
+      <button id="username-save" class="btn btn-primary">保存</button>
+    </div>
+
+    <div class="account-divider"></div>
+
+    <div id="discord-disconnected">
+      <p class="account-note">Discordでログインすると、アイコンとユーザー名でランキングに載ります。ログインしない場合はゲスト扱いになります。</p>
+      <button id="discord-login-btn" class="btn btn-ghost discord-btn">Discordでログイン</button>
+    </div>
+
+    <div id="discord-connected" class="hidden">
+      <div class="discord-profile">
+        <img id="discord-avatar" class="discord-avatar" alt="">
+        <span id="discord-name"></span>
+      </div>
+      <button id="discord-logout-btn" class="btn btn-ghost">ログアウト</button>
+    </div>
+  </div>
+</div>
+
+<script src="tetris-menu.js"></script>
 </body>
 </html>

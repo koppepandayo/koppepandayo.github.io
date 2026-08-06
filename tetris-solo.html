@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tetris Solo | koppepandayo</title>
+<meta name="description" content="koppepandayoのサイトで遊べるTetris">
+<link rel="icon" href="assets/koppecat.jpg">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="tetris.css">
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<header class="hero tetris-hero">
+  <nav class="nav">
+    <a class="nav-logo" href="index.html">koppepandayo</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="tetris.html">メニュー</a>
+      <a href="tetris-multi.html">マルチプレイ</a>
+    </div>
+  </nav>
+</header>
+
+<main class="tetris-main">
+  <h1 class="tetris-title">TETRIS</h1>
+
+  <div class="tetris-layout">
+    <div class="tetris-side">
+      <div class="card tetris-panel">
+        <span class="panel-label">HOLD</span>
+        <canvas id="hold-canvas" width="96" height="96"></canvas>
+      </div>
+      <div class="card tetris-panel">
+        <span class="panel-label">SCORE</span>
+        <p id="score" class="panel-value">0</p>
+      </div>
+      <div class="card tetris-panel">
+        <span class="panel-label">LEVEL</span>
+        <p id="level" class="panel-value">1</p>
+      </div>
+      <div class="card tetris-panel">
+        <span class="panel-label">LINES</span>
+        <p id="lines" class="panel-value">0</p>
+      </div>
+      <div class="card tetris-panel">
+        <span class="panel-label">HIGH SCORE</span>
+        <p id="high-score" class="panel-value">0</p>
+      </div>
+    </div>
+
+    <div class="tetris-board-wrap">
+      <canvas id="board-canvas" width="300" height="600"></canvas>
+      <div id="clear-toast" class="clear-toast"></div>
+      <div id="overlay" class="tetris-overlay">
+        <div class="overlay-message">
+          <p id="overlay-text">Ready?</p>
+          <p id="overlay-score"></p>
+        </div>
+        <button id="start-btn" class="btn btn-primary">はじめる</button>
+      </div>
+    </div>
+
+    <div class="tetris-side">
+      <div class="card tetris-panel">
+        <span class="panel-label">NEXT</span>
+        <canvas id="next-canvas" width="96" height="300"></canvas>
+      </div>
+      <div class="card tetris-panel tetris-help">
+        <span class="panel-label">操作</span>
+        <p>← → : 移動</p>
+        <p>↓ : ソフトドロップ</p>
+        <p>↑ / X : 回転</p>
+        <p>Z : 逆回転</p>
+        <p>Space : ハードドロップ</p>
+        <p>C : ホールド</p>
+        <p>P : ポーズ</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="tetris-touch">
+    <button data-action="left" aria-label="左に移動">◀</button>
+    <button data-action="rotate-ccw" aria-label="逆回転">⟲</button>
+    <button data-action="rotate" aria-label="回転">⟳</button>
+    <button data-action="right" aria-label="右に移動">▶</button>
+    <button data-action="down" aria-label="ソフトドロップ">▼</button>
+    <button data-action="drop" aria-label="ハードドロップ">⇓</button>
+    <button data-action="hold" aria-label="ホールド">H</button>
+  </div>
+</main>
+
+<script src="tetris-engine.js"></script>
+<script src="tetris.js"></script>
+</body>
+</html>
