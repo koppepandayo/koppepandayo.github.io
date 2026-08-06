@@ -65,8 +65,7 @@
   });
 
   discordLoginBtn.addEventListener("click", () => {
-    discordLoginBtn.textContent = "準備中です (近日対応)";
-    discordLoginBtn.disabled = true;
+    window.location.href = "https://discord-auth.koppepandayo07.workers.dev/auth/discord/login";
   });
 
   discordLogoutBtn.addEventListener("click", () => {
@@ -76,5 +75,39 @@
     refreshUI();
   });
 
+  function base64urlToJson(str) {
+    str = str.replace(/-/g, "+").replace(/_/g, "/");
+    while (str.length % 4) str += "=";
+    return JSON.parse(decodeURIComponent(escape(atob(str))));
+  }
+
+  function consumeDiscordCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const discordData = params.get("discord");
+    const sig = params.get("sig");
+    const error = params.get("discord_error");
+
+    if (!discordData && !error) return false;
+
+    window.history.replaceState({}, "", window.location.pathname);
+
+    if (error) {
+      window.alert("Discordログインに失敗しました: " + error);
+      return true;
+    }
+
+    try {
+      const payload = base64urlToJson(discordData);
+      const account = loadAccount();
+      account.discord = { id: payload.id, username: payload.username, avatar: payload.avatar, token: discordData + "." + sig };
+      saveAccount(account);
+    } catch (e) {
+      window.alert("Discordログインの処理に失敗しました");
+    }
+    return true;
+  }
+
+  const cameFromDiscord = consumeDiscordCallback();
   refreshUI();
+  if (cameFromDiscord) modal.classList.remove("hidden");
 })();
