@@ -139,8 +139,11 @@ body {
 .btn-primary:hover { opacity: 0.9; }
 
 .btn-ghost {
+  background: transparent;
   border: 1px solid var(--border);
   color: var(--text);
+  font-family: inherit;
+  cursor: pointer;
 }
 
 .btn-ghost:hover { border-color: var(--accent); }

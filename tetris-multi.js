@@ -8,12 +8,12 @@
 
   const connStatus = document.getElementById("conn-status");
   const lobbyPanel = document.getElementById("lobby-panel");
-  const nameInput = document.getElementById("name-input");
   const joinBtn = document.getElementById("join-btn");
   const playerCountEl = document.getElementById("player-count");
   const playerListEl = document.getElementById("player-list");
   const lobbyActions = document.getElementById("lobby-actions");
   const startMatchBtn = document.getElementById("start-match-btn");
+  const autoStartNote = document.getElementById("auto-start-note");
 
   const spectatePanel = document.getElementById("spectate-panel");
   const queueBtn = document.getElementById("queue-btn");
@@ -87,8 +87,12 @@
         queueStatus.textContent = msg.queueCount > 0 ? `参加待ち: ${msg.queueCount}人` : "";
         updatePanels();
         break;
+      case "auto-start":
+        showAutoStartNote(msg.seconds);
+        break;
       case "countdown":
         phase = "countdown";
+        autoStartNote.classList.add("hidden");
         showCountdown(msg.seconds);
         break;
       case "match-start":
@@ -149,6 +153,15 @@
         queueBtn.textContent = myRole === "queued" ? "参加予約済み" : "次の試合に参加 (inQueue)";
       }
     }
+  }
+
+  function showAutoStartNote(seconds) {
+    if (seconds === null) {
+      autoStartNote.classList.add("hidden");
+      return;
+    }
+    autoStartNote.textContent = `2人以上集まったので ${seconds}秒後に自動開始します`;
+    autoStartNote.classList.remove("hidden");
   }
 
   function showCountdown(seconds) {
@@ -392,8 +405,18 @@
 
   // ---- UI wiring ----
 
+  function getAccountName() {
+    try {
+      const account = JSON.parse(localStorage.getItem("koppepandayo-tetris-account"));
+      if (account) return (account.discord && account.discord.username) || account.username || "";
+    } catch (e) {
+      // ignore malformed/missing account data
+    }
+    return "";
+  }
+
   joinBtn.addEventListener("click", () => {
-    send({ type: "join", name: nameInput.value.trim() || "Guest" });
+    send({ type: "join", name: getAccountName() || "Guest" });
   });
 
   startMatchBtn.addEventListener("click", () => {
@@ -403,15 +426,6 @@
   queueBtn.addEventListener("click", () => {
     send({ type: "queue" });
   });
-
-  try {
-    const account = JSON.parse(localStorage.getItem("koppepandayo-tetris-account"));
-    if (account) {
-      nameInput.value = (account.discord && account.discord.username) || account.username || "";
-    }
-  } catch (e) {
-    // ignore malformed/missing account data
-  }
 
   connect();
 })();
