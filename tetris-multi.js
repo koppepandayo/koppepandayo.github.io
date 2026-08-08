@@ -12,11 +12,20 @@
   const playerCountEl = document.getElementById("player-count");
   const playerListEl = document.getElementById("player-list");
   const autoStartNote = document.getElementById("auto-start-note");
+  const lobbyActions = document.getElementById("lobby-actions");
+  const readyBtn = document.getElementById("ready-btn");
   const waitBtn = document.getElementById("wait-btn");
   const joinError = document.getElementById("join-error");
+  const winsLoading = document.getElementById("wins-loading");
+  const winsList = document.getElementById("wins-list");
+
+  const SCORES_API = "https://tetris-scores.koppepandayo07.workers.dev";
+  const WAIT_MIN_SECONDS = 3;
 
   let autoStartActive = false;
+  let autoStartSeconds = null;
   let myUsedWait = false;
+  let myReady = false;
 
   const DEVICE_ID_KEY = "koppepandayo-tetris-device-id";
   let deviceId = localStorage.getItem(DEVICE_ID_KEY);
@@ -56,7 +65,6 @@
   let engine = null;
   let lastTime = 0;
   let toastTimer;
-  let rankingTimer;
   const opponentTiles = new Map(); // id -> { tile, canvas, ctx, nameEl }
   let boardSendAccum = 0;
 
@@ -98,13 +106,16 @@
         phase = msg.phase;
         myRole = msg.you.role;
         myUsedWait = !!msg.you.usedWait;
+        myReady = !!(msg.players.find((p) => p.id === myId) || {}).ready;
         renderPlayerList(msg.players);
         queueStatus.textContent = msg.queueCount > 0 ? `参加待ち: ${msg.queueCount}人` : "";
         updatePanels();
         updateWaitBtn();
+        updateReadyBtn();
         break;
       case "auto-start":
         autoStartActive = msg.seconds !== null;
+        autoStartSeconds = msg.seconds;
         showAutoStartNote(msg.seconds, msg.extendedBy);
         updateWaitBtn();
         break;
@@ -151,7 +162,8 @@
       const li = document.createElement("li");
       li.appendChild(makeAvatarImg(p.avatar));
       const name = document.createElement("span");
-      name.textContent = p.name + (p.id === myId ? " (あなた)" : "");
+      name.textContent = (p.ready ? "✓ " : "") + p.name + (p.id === myId ? " (あなた)" : "");
+      if (p.ready) name.classList.add("ready-name");
       li.appendChild(name);
       playerListEl.appendChild(li);
     }
@@ -171,6 +183,7 @@
       lobbyPanel.classList.remove("hidden");
       joinBtn.disabled = myRole === "player";
       joinBtn.textContent = myRole === "player" ? "参加済み" : "参加";
+      lobbyActions.classList.toggle("hidden", myRole !== "player");
     } else if (phase === "countdown") {
       if (inThisMatch) battleLayout.classList.remove("hidden");
       else lobbyPanel.classList.remove("hidden");
@@ -197,12 +210,22 @@
   }
 
   function updateWaitBtn() {
-    const show = phase === "lobby" && myRole === "player" && autoStartActive && !myUsedWait;
+    const show =
+      phase === "lobby" &&
+      myRole === "player" &&
+      autoStartActive &&
+      !myUsedWait &&
+      (autoStartSeconds === null || autoStartSeconds > WAIT_MIN_SECONDS);
     waitBtn.classList.toggle("hidden", !show);
   }
 
+  function updateReadyBtn() {
+    readyBtn.textContent = myReady ? "Ready 済み" : "Ready";
+    readyBtn.classList.toggle("btn-ghost", myReady);
+    readyBtn.classList.toggle("btn-primary", !myReady);
+  }
+
   function showCountdown(seconds) {
-    clearTimeout(rankingTimer);
     rankingPanel.classList.add("hidden");
     countdownOverlay.classList.remove("hidden");
     countdownText.textContent = seconds > 0 ? String(seconds) : "GO!";
@@ -227,12 +250,62 @@
       li.appendChild(name);
       rankingList.appendChild(li);
     }
-    clearTimeout(rankingTimer);
-    rankingTimer = setTimeout(() => rankingPanel.classList.add("hidden"), 6000);
+    // Stays visible (no auto-hide timer) until the next countdown starts --
+    // showCountdown() is what hides it.
     engine = null;
     youEliminated.classList.add("hidden");
     opponentTiles.forEach((t) => t.tile.remove());
     opponentTiles.clear();
+
+    const won = ranking.find((r) => r.id === myId && r.rank === 1);
+    if (won) submitWin();
+  }
+
+  function submitWin() {
+    const account = getAccount();
+    if (!account.discord) return;
+    fetch(`${SCORES_API}/win`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        discordId: account.discord.id,
+        name: account.discord.username,
+        avatar: account.discord.avatar,
+      }),
+    })
+      .then(() => loadWins())
+      .catch(() => {});
+  }
+
+  function loadWins() {
+    winsLoading.classList.remove("hidden");
+    winsLoading.textContent = "読み込み中...";
+    winsList.innerHTML = "";
+    fetch(`${SCORES_API}/wins?limit=20`)
+      .then((r) => r.json())
+      .then((data) => {
+        winsList.innerHTML = "";
+        (data.wins || []).forEach((w, i) => {
+          const li = document.createElement("li");
+          const num = document.createElement("span");
+          num.className = "rank-num";
+          num.textContent = `#${i + 1}`;
+          const nameWrap = document.createElement("span");
+          nameWrap.textContent = `${w.name} - ${w.win_count}勝`;
+          li.appendChild(num);
+          li.appendChild(makeAvatarImg(w.avatar));
+          li.appendChild(nameWrap);
+          winsList.appendChild(li);
+        });
+        if ((data.wins || []).length === 0) {
+          winsLoading.textContent = "まだ記録がありません";
+        } else {
+          winsLoading.classList.add("hidden");
+        }
+      })
+      .catch(() => {
+        winsLoading.textContent = "読み込みに失敗しました";
+      });
   }
 
   // ---- own board rendering ----
@@ -469,5 +542,10 @@
     send({ type: "wait" });
   });
 
+  readyBtn.addEventListener("click", () => {
+    send({ type: "ready" });
+  });
+
+  loadWins();
   connect();
 })();

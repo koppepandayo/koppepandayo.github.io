@@ -73,9 +73,18 @@
   font-size: 0.85rem;
 }
 
-.wait-btn {
+.lobby-actions {
   margin-top: 12px;
-  width: 100%;
+  display: flex;
+  gap: 10px;
+}
+
+.lobby-actions button {
+  flex: 1;
+}
+
+.ready-name {
+  color: var(--accent2);
 }
 
 .join-error {

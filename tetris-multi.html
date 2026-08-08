@@ -28,80 +28,95 @@
 
 <main class="tetris-main">
   <h1 class="tetris-title">TETRIS BATTLE</h1>
-  <p id="conn-status" class="conn-status">接続中...</p>
 
-  <!-- Lobby: name entry + join -->
-  <section id="lobby-panel" class="card multi-panel hidden">
-    <p class="multi-phase-label" id="phase-label">ロビー</p>
-    <div class="lobby-join">
-      <button id="join-btn" class="btn btn-primary">参加</button>
-    </div>
-    <div class="player-list-wrap">
-      <p class="panel-label">プレイヤー (<span id="player-count">0</span>/10)</p>
-      <ul id="player-list" class="player-list"></ul>
-    </div>
-    <p id="auto-start-note" class="queue-status hidden"></p>
-    <button id="wait-btn" class="btn btn-ghost wait-btn hidden" type="button">ちょっと待って (+10秒)</button>
-    <p id="join-error" class="join-error hidden"></p>
-  </section>
+  <div class="solo-grid">
+    <div class="solo-game-area">
+      <p id="conn-status" class="conn-status">接続中...</p>
 
-  <!-- Waiting to join next match (spectating while a match is live) -->
-  <section id="spectate-panel" class="card multi-panel hidden">
-    <p class="multi-phase-label">試合進行中 - 観戦中</p>
-    <p class="spectate-note">今の試合が終わると次の試合が始まります。</p>
-    <button id="queue-btn" class="btn btn-primary">次の試合に参加 (inQueue)</button>
-    <p id="queue-status" class="queue-status"></p>
-  </section>
-
-  <!-- Countdown overlay -->
-  <div id="countdown-overlay" class="countdown-overlay hidden">
-    <p id="countdown-text">3</p>
-  </div>
-
-  <!-- Match end ranking -->
-  <section id="ranking-panel" class="card multi-panel hidden">
-    <p class="multi-phase-label">試合結果</p>
-    <ol id="ranking-list" class="ranking-list"></ol>
-  </section>
-
-  <!-- Battle layout: own board + opponents -->
-  <div id="battle-layout" class="battle-layout hidden">
-    <div class="tetris-side">
-      <div class="card tetris-panel">
-        <span class="panel-label">HOLD</span>
-        <canvas id="hold-canvas" width="72" height="72"></canvas>
-      </div>
-      <div class="card tetris-panel">
-        <span class="panel-label">SCORE</span>
-        <p id="score" class="panel-value">0</p>
-      </div>
-      <div class="card tetris-panel">
-        <span class="panel-label">NEXT</span>
-        <canvas id="next-canvas" width="72" height="220"></canvas>
-      </div>
-      <div class="card tetris-panel tetris-help">
-        <span class="panel-label">操作</span>
-        <p>← → : 移動</p>
-        <p>↓ : ソフトドロップ</p>
-        <p>↑ / X : 回転</p>
-        <p>Z : 逆回転</p>
-        <p>Space : ハードドロップ</p>
-        <p>C : ホールド</p>
-      </div>
-    </div>
-
-    <div class="tetris-board-wrap multi-board-wrap">
-      <canvas id="board-canvas" width="300" height="600"></canvas>
-      <div id="clear-toast" class="clear-toast"></div>
-      <div id="you-eliminated" class="tetris-overlay hidden">
-        <div class="overlay-message">
-          <p>K.O.</p>
-          <p class="overlay-score" id="you-rank"></p>
+      <!-- Lobby: name entry + join -->
+      <section id="lobby-panel" class="card multi-panel hidden">
+        <p class="multi-phase-label" id="phase-label">ロビー</p>
+        <div class="lobby-join">
+          <button id="join-btn" class="btn btn-primary">参加</button>
         </div>
+        <div class="player-list-wrap">
+          <p class="panel-label">プレイヤー (<span id="player-count">0</span>/10)</p>
+          <ul id="player-list" class="player-list"></ul>
+        </div>
+        <p id="auto-start-note" class="queue-status hidden"></p>
+        <div class="lobby-actions hidden" id="lobby-actions">
+          <button id="ready-btn" class="btn btn-primary" type="button">Ready</button>
+          <button id="wait-btn" class="btn btn-ghost wait-btn" type="button">ちょっと待って (+10秒)</button>
+        </div>
+        <p id="join-error" class="join-error hidden"></p>
+      </section>
+
+      <!-- Waiting to join next match (spectating while a match is live) -->
+      <section id="spectate-panel" class="card multi-panel hidden">
+        <p class="multi-phase-label">試合進行中 - 観戦中</p>
+        <p class="spectate-note">今の試合が終わると次の試合が始まります。</p>
+        <button id="queue-btn" class="btn btn-primary">次の試合に参加 (inQueue)</button>
+        <p id="queue-status" class="queue-status"></p>
+      </section>
+
+      <!-- Countdown overlay -->
+      <div id="countdown-overlay" class="countdown-overlay hidden">
+        <p id="countdown-text">3</p>
+      </div>
+
+      <!-- Match end ranking -->
+      <section id="ranking-panel" class="card multi-panel hidden">
+        <p class="multi-phase-label">試合結果</p>
+        <ol id="ranking-list" class="ranking-list"></ol>
+      </section>
+
+      <!-- Battle layout: own board + opponents -->
+      <div id="battle-layout" class="battle-layout hidden">
+        <div class="tetris-side">
+          <div class="card tetris-panel">
+            <span class="panel-label">HOLD</span>
+            <canvas id="hold-canvas" width="72" height="72"></canvas>
+          </div>
+          <div class="card tetris-panel">
+            <span class="panel-label">SCORE</span>
+            <p id="score" class="panel-value">0</p>
+          </div>
+          <div class="card tetris-panel">
+            <span class="panel-label">NEXT</span>
+            <canvas id="next-canvas" width="72" height="220"></canvas>
+          </div>
+          <div class="card tetris-panel tetris-help">
+            <span class="panel-label">操作</span>
+            <p>← → : 移動</p>
+            <p>↓ : ソフトドロップ</p>
+            <p>↑ / X : 回転</p>
+            <p>Z : 逆回転</p>
+            <p>Space : ハードドロップ</p>
+            <p>C : ホールド</p>
+          </div>
+        </div>
+
+        <div class="tetris-board-wrap multi-board-wrap">
+          <canvas id="board-canvas" width="300" height="600"></canvas>
+          <div id="clear-toast" class="clear-toast"></div>
+          <div id="you-eliminated" class="tetris-overlay hidden">
+            <div class="overlay-message">
+              <p>K.O.</p>
+              <p class="overlay-score" id="you-rank"></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="opponents-grid" id="opponents-grid"></div>
       </div>
     </div>
 
-    <div class="opponents-grid" id="opponents-grid"></div>
+    <aside class="card solo-ranking-panel">
+      <p class="modal-title">🏆 勝利数ランキング</p>
+      <p class="account-note ranking-hint">Discordでログインすると記録が載ります（<a href="tetris.html">アカウント設定</a>）</p>
+      <p id="wins-loading" class="account-note">読み込み中...</p>
+      <ol id="wins-list" class="ranking-list"></ol>
+    </aside>
   </div>
 </main>
 
