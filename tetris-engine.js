@@ -384,19 +384,25 @@
       if (n > 0) this.garbageQueue.push(n);
     }
 
+    // Only ever called between a lock and the next spawn (see
+    // _applyPendingGarbage), so there's no live falling piece to reposition:
+    // `this.current` at this point is the piece that just locked, already
+    // baked into `this.grid`. A row-of-blocks-getting-pushed-off-the-top is
+    // the actual top-out condition for garbage, not a collision check
+    // against `this.current` (which used to always self-collide with its
+    // own just-shifted cells and cause a bogus instant death).
     _insertGarbage(n) {
       if (n <= 0) return;
       const gapCol = Math.floor(this.rng() * COLS);
+      let toppedOut = false;
       for (let i = 0; i < n; i++) {
-        this.grid.shift();
+        const removed = this.grid.shift();
+        if (removed.some((c) => c)) toppedOut = true;
         const row = Array(COLS).fill("X");
         row[gapCol] = null;
         this.grid.push(row);
       }
-      // shift the currently falling piece up with the board so it doesn't
-      // end up embedded in the new garbage
-      if (this.current) this.current = { ...this.current, y: this.current.y - n };
-      if (this._collides(this.current)) this._endGame();
+      if (toppedOut) this._endGame();
     }
 
     holdSwap() {
