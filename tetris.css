@@ -189,6 +189,26 @@
   min-width: 28px;
 }
 
+.rank-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.rank-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rank-score {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+}
+
 .player-avatar {
   width: 22px;
   height: 22px;

@@ -90,11 +90,19 @@
           const num = document.createElement("span");
           num.className = "rank-num";
           num.textContent = `#${i + 1}`;
-          const nameWrap = document.createElement("span");
-          nameWrap.textContent = `${s.name} - ${s.score}`;
+          const info = document.createElement("div");
+          info.className = "rank-info";
+          const name = document.createElement("div");
+          name.className = "rank-name";
+          name.textContent = s.name;
+          const score = document.createElement("div");
+          score.className = "rank-score";
+          score.textContent = `${s.score}点`;
+          info.appendChild(name);
+          info.appendChild(score);
           li.appendChild(num);
           li.appendChild(makeAvatarImg(s.avatar));
-          li.appendChild(nameWrap);
+          li.appendChild(info);
           soloRankingList.appendChild(li);
         });
         if ((data.scores || []).length === 0) {

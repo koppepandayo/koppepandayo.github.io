@@ -300,11 +300,19 @@
           const num = document.createElement("span");
           num.className = "rank-num";
           num.textContent = `#${i + 1}`;
-          const nameWrap = document.createElement("span");
-          nameWrap.textContent = `${w.name} - ${w.win_count}勝`;
+          const info = document.createElement("div");
+          info.className = "rank-info";
+          const name = document.createElement("div");
+          name.className = "rank-name";
+          name.textContent = w.name;
+          const score = document.createElement("div");
+          score.className = "rank-score";
+          score.textContent = `${w.win_count}勝`;
+          info.appendChild(name);
+          info.appendChild(score);
           li.appendChild(num);
           li.appendChild(makeAvatarImg(w.avatar));
-          li.appendChild(nameWrap);
+          li.appendChild(info);
           winsList.appendChild(li);
         });
         if ((data.wins || []).length === 0) {
