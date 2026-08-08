@@ -75,7 +75,7 @@
 }
 
 .solo-ranking-panel {
-  width: 260px;
+  width: 340px;
   flex-shrink: 0;
   padding: 20px;
   max-height: 720px;
@@ -294,7 +294,7 @@
 
   .solo-ranking-panel {
     width: 100%;
-    max-width: 420px;
+    max-width: 480px;
     max-height: none;
   }
 }
