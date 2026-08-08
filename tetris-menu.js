@@ -7,6 +7,7 @@
   const accountSummary = document.getElementById("account-summary");
   const modal = document.getElementById("account-modal");
   const closeBtn = document.getElementById("account-close");
+  const usernameSection = document.getElementById("username-section");
   const usernameInput = document.getElementById("username-input");
   const usernameSave = document.getElementById("username-save");
   const discordDisconnected = document.getElementById("discord-disconnected");
@@ -33,12 +34,14 @@
     usernameInput.value = account.username || "";
 
     if (account.discord) {
+      usernameSection.classList.add("hidden");
       discordDisconnected.classList.add("hidden");
       discordConnected.classList.remove("hidden");
       discordAvatar.src = account.discord.avatar;
       discordName.textContent = account.discord.username;
       accountSummary.textContent = account.discord.username;
     } else {
+      usernameSection.classList.remove("hidden");
       discordDisconnected.classList.remove("hidden");
       discordConnected.classList.add("hidden");
       accountSummary.textContent = account.username || "ゲスト";
