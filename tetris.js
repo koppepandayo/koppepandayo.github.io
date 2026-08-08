@@ -53,10 +53,11 @@
     const account = getAccount();
     const name = (account.discord && account.discord.username) || account.username || "ゲスト";
     const avatar = account.discord ? account.discord.avatar : null;
+    const discordId = account.discord ? account.discord.id : null;
     fetch(`${SCORES_API}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, avatar, score: self.score, lines: self.lines, level: self.level, deviceId: getDeviceId() }),
+      body: JSON.stringify({ name, avatar, score: self.score, lines: self.lines, level: self.level, deviceId: getDeviceId(), discordId }),
     })
       .then(() => loadRanking())
       .catch(() => {});
