@@ -126,12 +126,23 @@
     }
   }
 
+  function makeAvatarImg(url) {
+    const img = document.createElement("img");
+    img.className = "player-avatar";
+    img.src = url || "assets/koppecat.jpg";
+    img.alt = "";
+    return img;
+  }
+
   function renderPlayerList(players) {
     playerCountEl.textContent = players.length;
     playerListEl.innerHTML = "";
     for (const p of players) {
       const li = document.createElement("li");
-      li.textContent = p.name + (p.id === myId ? " (あなた)" : "");
+      li.appendChild(makeAvatarImg(p.avatar));
+      const name = document.createElement("span");
+      name.textContent = p.name + (p.id === myId ? " (あなた)" : "");
+      li.appendChild(name);
       playerListEl.appendChild(li);
     }
   }
@@ -195,6 +206,7 @@
       const name = document.createElement("span");
       name.textContent = r.name + (r.id === myId ? " (あなた)" : "");
       li.appendChild(num);
+      li.appendChild(makeAvatarImg(r.avatar));
       li.appendChild(name);
       rankingList.appendChild(li);
     }
@@ -414,19 +426,20 @@
 
   // ---- UI wiring ----
 
-  function getAccountName() {
+  function getAccount() {
     try {
-      const account = JSON.parse(localStorage.getItem("koppepandayo-tetris-account"));
-      if (account) return (account.discord && account.discord.username) || account.username || "";
+      return JSON.parse(localStorage.getItem("koppepandayo-tetris-account")) || {};
     } catch (e) {
-      // ignore malformed/missing account data
+      return {};
     }
-    return "";
   }
 
   joinBtn.addEventListener("click", () => {
     joinError.classList.add("hidden");
-    send({ type: "join", name: getAccountName() || "Guest", deviceId });
+    const account = getAccount();
+    const name = (account.discord && account.discord.username) || account.username || "Guest";
+    const avatar = account.discord ? account.discord.avatar : null;
+    send({ type: "join", name, avatar, deviceId });
   });
 
   queueBtn.addEventListener("click", () => {
