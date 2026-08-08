@@ -11,9 +11,15 @@
   const joinBtn = document.getElementById("join-btn");
   const playerCountEl = document.getElementById("player-count");
   const playerListEl = document.getElementById("player-list");
-  const lobbyActions = document.getElementById("lobby-actions");
-  const startMatchBtn = document.getElementById("start-match-btn");
   const autoStartNote = document.getElementById("auto-start-note");
+  const joinError = document.getElementById("join-error");
+
+  const DEVICE_ID_KEY = "koppepandayo-tetris-device-id";
+  let deviceId = localStorage.getItem(DEVICE_ID_KEY);
+  if (!deviceId) {
+    deviceId = (crypto.randomUUID && crypto.randomUUID()) || String(Date.now()) + Math.random().toString(36).slice(2);
+    localStorage.setItem(DEVICE_ID_KEY, deviceId);
+  }
 
   const spectatePanel = document.getElementById("spectate-panel");
   const queueBtn = document.getElementById("queue-btn");
@@ -80,6 +86,10 @@
       case "welcome":
         myId = msg.id;
         break;
+      case "join-rejected":
+        joinError.textContent = "このブラウザからは既に参加しています（別タブでの多重参加はできません）";
+        joinError.classList.remove("hidden");
+        break;
       case "state":
         phase = msg.phase;
         myRole = msg.you.role;
@@ -138,7 +148,6 @@
     if (phase === "lobby") {
       inThisMatch = false;
       lobbyPanel.classList.remove("hidden");
-      lobbyActions.classList.toggle("hidden", myRole !== "player");
       joinBtn.disabled = myRole === "player";
       joinBtn.textContent = myRole === "player" ? "参加済み" : "参加";
     } else if (phase === "countdown") {
@@ -416,11 +425,8 @@
   }
 
   joinBtn.addEventListener("click", () => {
-    send({ type: "join", name: getAccountName() || "Guest" });
-  });
-
-  startMatchBtn.addEventListener("click", () => {
-    send({ type: "start" });
+    joinError.classList.add("hidden");
+    send({ type: "join", name: getAccountName() || "Guest", deviceId });
   });
 
   queueBtn.addEventListener("click", () => {

@@ -75,6 +75,12 @@
   font-size: 0.85rem;
 }
 
+.join-error {
+  margin-top: 12px;
+  color: #e0555f;
+  font-size: 0.85rem;
+}
+
 .countdown-overlay {
   position: fixed;
   inset: 0;
