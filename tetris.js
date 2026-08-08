@@ -51,13 +51,19 @@
 
   function submitScore(self) {
     const account = getAccount();
-    const name = (account.discord && account.discord.username) || account.username || "ゲスト";
-    const avatar = account.discord ? account.discord.avatar : null;
-    const discordId = account.discord ? account.discord.id : null;
+    if (!account.discord) return; // leaderboard is Discord-login only
     fetch(`${SCORES_API}/submit`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, avatar, score: self.score, lines: self.lines, level: self.level, deviceId: getDeviceId(), discordId }),
+      body: JSON.stringify({
+        name: account.discord.username,
+        avatar: account.discord.avatar,
+        score: self.score,
+        lines: self.lines,
+        level: self.level,
+        deviceId: getDeviceId(),
+        discordId: account.discord.id,
+      }),
     })
       .then(() => loadRanking())
       .catch(() => {});
