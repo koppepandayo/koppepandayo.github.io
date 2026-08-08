@@ -125,21 +125,27 @@
         autoStartNote.classList.add("hidden");
         updateWaitBtn();
         showCountdown(msg.seconds);
+        TetrisAudio.playSFX(msg.seconds > 0 ? "countdown" : "go");
         break;
       case "match-start":
         phase = "playing";
         hideCountdown();
         beginMyMatch(msg.players);
+        TetrisAudio.startMusic();
         break;
       case "incoming":
         if (engine) engine.receiveGarbage(msg.amount);
+        TetrisAudio.playSFX("incoming");
         break;
       case "opponent-board":
         renderOpponentBoard(msg.id, msg.grid, msg.current);
         break;
       case "eliminated":
         markOpponentDead(msg.id);
-        if (msg.id === myId) showYouEliminated(msg.rank);
+        if (msg.id === myId) {
+          showYouEliminated(msg.rank);
+          TetrisAudio.playSFX("ko");
+        }
         break;
       case "match-end":
         showRanking(msg.ranking);
@@ -236,6 +242,7 @@
   }
 
   function showRanking(ranking) {
+    TetrisAudio.stopMusic();
     rankingPanel.classList.remove("hidden");
     rankingList.innerHTML = "";
     for (const r of ranking) {
@@ -258,7 +265,10 @@
     opponentTiles.clear();
 
     const won = ranking.find((r) => r.id === myId && r.rank === 1);
-    if (won) submitWin();
+    if (won) {
+      TetrisAudio.playSFX("victory");
+      submitWin();
+    }
   }
 
   function submitWin() {
@@ -449,7 +459,16 @@
     engine = new TetrisEngine({
       onLock(self, info) {
         if (info.label) showToast(info.label);
-        if (info.attack > 0) send({ type: "attack", amount: info.attack });
+        if (info.tspin) TetrisAudio.playSFX("tspin");
+        else if (info.cleared === 4) TetrisAudio.playSFX("tetris");
+        else if (info.cleared === 3) TetrisAudio.playSFX("line3");
+        else if (info.cleared === 2) TetrisAudio.playSFX("line2");
+        else if (info.cleared === 1) TetrisAudio.playSFX("line1");
+        else TetrisAudio.playSFX("lock");
+        if (info.attack > 0) {
+          send({ type: "attack", amount: info.attack });
+          TetrisAudio.playSFX("attack");
+        }
         sendBoard();
       },
       onGameOver() {
@@ -525,6 +544,8 @@
   }
 
   joinBtn.addEventListener("click", () => {
+    TetrisAudio.resume();
+    TetrisAudio.playSFX("join");
     joinError.classList.add("hidden");
     const account = getAccount();
     const name = (account.discord && account.discord.username) || account.username || "Guest";

@@ -112,10 +112,21 @@
 
   let toastTimer;
   let lastTime;
+  let lastLevel = 1;
+
+  function playClearSound(info) {
+    if (info.tspin) TetrisAudio.playSFX("tspin");
+    else if (info.cleared === 4) TetrisAudio.playSFX("tetris");
+    else if (info.cleared === 3) TetrisAudio.playSFX("line3");
+    else if (info.cleared === 2) TetrisAudio.playSFX("line2");
+    else if (info.cleared === 1) TetrisAudio.playSFX("line1");
+    else TetrisAudio.playSFX("lock");
+  }
 
   const engine = new TetrisEngine({
     onLock(self, info) {
       if (info.label) showToast(info.label);
+      playClearSound(info);
     },
     onGameOver(self) {
       endGame(self);
@@ -124,6 +135,10 @@
       scoreEl.textContent = self.score;
       levelEl.textContent = self.level;
       linesEl.textContent = self.lines;
+      if (self.level > lastLevel) {
+        lastLevel = self.level;
+        TetrisAudio.playSFX("levelup");
+      }
     },
   });
 
@@ -137,6 +152,8 @@
   }
 
   function endGame(self) {
+    TetrisAudio.stopMusic();
+    TetrisAudio.playSFX("gameover");
     if (self.score > highScore) {
       highScore = self.score;
       localStorage.setItem(HIGH_SCORE_KEY, String(highScore));
@@ -217,11 +234,14 @@
   }
 
   function startGame() {
+    lastLevel = 1;
     engine.start();
     overlay.classList.add("hidden");
     render();
     lastTime = performance.now();
     requestAnimationFrame(loop);
+    TetrisAudio.resume();
+    TetrisAudio.startMusic();
   }
 
   function togglePause() {
@@ -231,10 +251,12 @@
       overlayScore.textContent = "";
       startBtn.textContent = "再開";
       overlay.classList.remove("hidden");
+      TetrisAudio.stopMusic();
     } else {
       overlay.classList.add("hidden");
       lastTime = performance.now();
       requestAnimationFrame(loop);
+      TetrisAudio.startMusic();
     }
   }
 
@@ -247,8 +269,20 @@
     if (engine.running) requestAnimationFrame(loop);
   }
 
+  const ACTION_SOUNDS = {
+    left: "move",
+    right: "move",
+    "rotate": "rotate",
+    "rotate-ccw": "rotate",
+    down: "softdrop",
+    drop: "harddrop",
+    hold: "hold",
+  };
+
   function handleAction(action) {
     engine.handleAction(action);
+    const sound = ACTION_SOUNDS[action];
+    if (sound) TetrisAudio.playSFX(sound);
     render();
   }
 
@@ -258,8 +292,8 @@
       return;
     }
     switch (e.key) {
-      case "ArrowLeft": if (!e.repeat) { engine.startDas("left"); render(); } e.preventDefault(); break;
-      case "ArrowRight": if (!e.repeat) { engine.startDas("right"); render(); } e.preventDefault(); break;
+      case "ArrowLeft": if (!e.repeat) { engine.startDas("left"); TetrisAudio.playSFX("move"); render(); } e.preventDefault(); break;
+      case "ArrowRight": if (!e.repeat) { engine.startDas("right"); TetrisAudio.playSFX("move"); render(); } e.preventDefault(); break;
       case "ArrowDown":
         if (!e.repeat) { engine.softDropHeld = true; engine.softDropElapsed = 20; handleAction("down"); }
         e.preventDefault();

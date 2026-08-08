@@ -23,6 +23,10 @@
       <a href="tetris.html">メニュー</a>
       <a href="tetris-multi.html">マルチプレイ</a>
     </div>
+    <div class="audio-control">
+      <button id="music-toggle" class="audio-btn" type="button" aria-label="音楽 on/off">🎵</button>
+      <input id="volume-slider" class="volume-slider" type="range" min="0" max="100" value="25" aria-label="音量">
+    </div>
   </nav>
 </header>
 
@@ -106,6 +110,7 @@
 </main>
 
 <script src="tetris-engine.js"></script>
+<script src="tetris-audio.js"></script>
 <script src="tetris.js"></script>
 </body>
 </html>
