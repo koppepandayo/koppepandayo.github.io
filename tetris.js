@@ -22,9 +22,6 @@
   const startBtn = document.getElementById("start-btn");
   const toastEl = document.getElementById("clear-toast");
 
-  const rankingBtn = document.getElementById("ranking-btn");
-  const rankingModal = document.getElementById("ranking-modal");
-  const rankingClose = document.getElementById("ranking-close");
   const rankingLoading = document.getElementById("ranking-loading");
   const soloRankingList = document.getElementById("solo-ranking-list");
 
@@ -60,7 +57,9 @@
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, avatar, score: self.score, lines: self.lines, level: self.level, deviceId: getDeviceId() }),
-    }).catch(() => {});
+    })
+      .then(() => loadRanking())
+      .catch(() => {});
   }
 
   function makeAvatarImg(url) {
@@ -71,14 +70,14 @@
     return img;
   }
 
-  function openRanking() {
-    rankingModal.classList.remove("hidden");
+  function loadRanking() {
     rankingLoading.classList.remove("hidden");
+    rankingLoading.textContent = "読み込み中...";
     soloRankingList.innerHTML = "";
     fetch(`${SCORES_API}/top?limit=20`)
       .then((r) => r.json())
       .then((data) => {
-        rankingLoading.classList.add("hidden");
+        soloRankingList.innerHTML = "";
         (data.scores || []).forEach((s, i) => {
           const li = document.createElement("li");
           const num = document.createElement("span");
@@ -93,7 +92,8 @@
         });
         if ((data.scores || []).length === 0) {
           rankingLoading.textContent = "まだ記録がありません";
-          rankingLoading.classList.remove("hidden");
+        } else {
+          rankingLoading.classList.add("hidden");
         }
       })
       .catch(() => {
@@ -101,11 +101,7 @@
       });
   }
 
-  rankingBtn.addEventListener("click", openRanking);
-  rankingClose.addEventListener("click", () => rankingModal.classList.add("hidden"));
-  rankingModal.addEventListener("click", (e) => {
-    if (e.target === rankingModal) rankingModal.classList.add("hidden");
-  });
+  loadRanking();
 
   let toastTimer;
   let lastTime;
