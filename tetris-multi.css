@@ -61,19 +61,6 @@
   font-size: 0.9rem;
 }
 
-.player-avatar {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
-}
-
-.lobby-actions {
-  margin-top: 20px;
-  text-align: center;
-}
-
 .spectate-note {
   color: var(--text-dim);
   font-size: 0.9rem;
@@ -109,30 +96,6 @@
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-}
-
-.ranking-list {
-  list-style: none;
-  counter-reset: rank;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.ranking-list li {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  border-radius: 8px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-}
-
-.ranking-list .rank-num {
-  font-weight: 800;
-  color: var(--accent2);
-  min-width: 28px;
 }
 
 .battle-layout {

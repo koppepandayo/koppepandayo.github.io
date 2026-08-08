@@ -8,6 +8,7 @@
 <link rel="icon" href="assets/koppecat.jpg">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="tetris.css">
+<link rel="stylesheet" href="tetris-menu.css">
 </head>
 <body>
 
@@ -21,6 +22,7 @@
       <a href="index.html">Home</a>
       <a href="tetris.html">メニュー</a>
       <a href="tetris-multi.html">マルチプレイ</a>
+      <button id="ranking-btn" type="button">🏆 ランキング</button>
     </div>
   </nav>
 </header>
@@ -92,6 +94,17 @@
     <button data-action="hold" aria-label="ホールド">H</button>
   </div>
 </main>
+
+<div id="ranking-modal" class="account-modal hidden">
+  <div class="card account-modal-inner">
+    <div class="account-modal-header">
+      <p class="modal-title">🏆 ランキング</p>
+      <button id="ranking-close" class="account-close" aria-label="閉じる">✕</button>
+    </div>
+    <p id="ranking-loading" class="account-note">読み込み中...</p>
+    <ol id="solo-ranking-list" class="ranking-list"></ol>
+  </div>
+</div>
 
 <script src="tetris-engine.js"></script>
 <script src="tetris.js"></script>

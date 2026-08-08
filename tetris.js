@@ -22,9 +22,90 @@
   const startBtn = document.getElementById("start-btn");
   const toastEl = document.getElementById("clear-toast");
 
+  const rankingBtn = document.getElementById("ranking-btn");
+  const rankingModal = document.getElementById("ranking-modal");
+  const rankingClose = document.getElementById("ranking-close");
+  const rankingLoading = document.getElementById("ranking-loading");
+  const soloRankingList = document.getElementById("solo-ranking-list");
+
+  const SCORES_API = "https://tetris-scores.koppepandayo07.workers.dev";
+  const DEVICE_ID_KEY = "koppepandayo-tetris-device-id";
+
   const HIGH_SCORE_KEY = "koppepandayo-tetris-high-score";
   let highScore = Number(localStorage.getItem(HIGH_SCORE_KEY)) || 0;
   highScoreEl.textContent = highScore;
+
+  function getAccount() {
+    try {
+      return JSON.parse(localStorage.getItem("koppepandayo-tetris-account")) || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function getDeviceId() {
+    let id = localStorage.getItem(DEVICE_ID_KEY);
+    if (!id) {
+      id = (crypto.randomUUID && crypto.randomUUID()) || String(Date.now()) + Math.random().toString(36).slice(2);
+      localStorage.setItem(DEVICE_ID_KEY, id);
+    }
+    return id;
+  }
+
+  function submitScore(self) {
+    const account = getAccount();
+    const name = (account.discord && account.discord.username) || account.username || "ゲスト";
+    const avatar = account.discord ? account.discord.avatar : null;
+    fetch(`${SCORES_API}/submit`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, avatar, score: self.score, lines: self.lines, level: self.level, deviceId: getDeviceId() }),
+    }).catch(() => {});
+  }
+
+  function makeAvatarImg(url) {
+    const img = document.createElement("img");
+    img.className = "player-avatar";
+    img.src = url || "assets/koppecat.jpg";
+    img.alt = "";
+    return img;
+  }
+
+  function openRanking() {
+    rankingModal.classList.remove("hidden");
+    rankingLoading.classList.remove("hidden");
+    soloRankingList.innerHTML = "";
+    fetch(`${SCORES_API}/top?limit=20`)
+      .then((r) => r.json())
+      .then((data) => {
+        rankingLoading.classList.add("hidden");
+        (data.scores || []).forEach((s, i) => {
+          const li = document.createElement("li");
+          const num = document.createElement("span");
+          num.className = "rank-num";
+          num.textContent = `#${i + 1}`;
+          const nameWrap = document.createElement("span");
+          nameWrap.textContent = `${s.name} - ${s.score}`;
+          li.appendChild(num);
+          li.appendChild(makeAvatarImg(s.avatar));
+          li.appendChild(nameWrap);
+          soloRankingList.appendChild(li);
+        });
+        if ((data.scores || []).length === 0) {
+          rankingLoading.textContent = "まだ記録がありません";
+          rankingLoading.classList.remove("hidden");
+        }
+      })
+      .catch(() => {
+        rankingLoading.textContent = "読み込みに失敗しました";
+      });
+  }
+
+  rankingBtn.addEventListener("click", openRanking);
+  rankingClose.addEventListener("click", () => rankingModal.classList.add("hidden"));
+  rankingModal.addEventListener("click", (e) => {
+    if (e.target === rankingModal) rankingModal.classList.add("hidden");
+  });
 
   let toastTimer;
   let lastTime;
@@ -58,6 +139,7 @@
       localStorage.setItem(HIGH_SCORE_KEY, String(highScore));
       highScoreEl.textContent = highScore;
     }
+    if (self.score > 0) submitScore(self);
     overlayText.textContent = "GAME OVER";
     overlayScore.textContent = `スコア: ${self.score}`;
     startBtn.textContent = "もう一度";
