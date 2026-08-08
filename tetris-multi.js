@@ -12,7 +12,11 @@
   const playerCountEl = document.getElementById("player-count");
   const playerListEl = document.getElementById("player-list");
   const autoStartNote = document.getElementById("auto-start-note");
+  const waitBtn = document.getElementById("wait-btn");
   const joinError = document.getElementById("join-error");
+
+  let autoStartActive = false;
+  let myUsedWait = false;
 
   const DEVICE_ID_KEY = "koppepandayo-tetris-device-id";
   let deviceId = localStorage.getItem(DEVICE_ID_KEY);
@@ -93,16 +97,22 @@
       case "state":
         phase = msg.phase;
         myRole = msg.you.role;
+        myUsedWait = !!msg.you.usedWait;
         renderPlayerList(msg.players);
         queueStatus.textContent = msg.queueCount > 0 ? `参加待ち: ${msg.queueCount}人` : "";
         updatePanels();
+        updateWaitBtn();
         break;
       case "auto-start":
-        showAutoStartNote(msg.seconds);
+        autoStartActive = msg.seconds !== null;
+        showAutoStartNote(msg.seconds, msg.extendedBy);
+        updateWaitBtn();
         break;
       case "countdown":
         phase = "countdown";
+        autoStartActive = false;
         autoStartNote.classList.add("hidden");
+        updateWaitBtn();
         showCountdown(msg.seconds);
         break;
       case "match-start":
@@ -175,13 +185,20 @@
     }
   }
 
-  function showAutoStartNote(seconds) {
+  function showAutoStartNote(seconds, extendedBy) {
     if (seconds === null) {
       autoStartNote.classList.add("hidden");
       return;
     }
-    autoStartNote.textContent = `2人以上集まったので ${seconds}秒後に自動開始します`;
+    autoStartNote.textContent = extendedBy
+      ? `${extendedBy}さんが延長しました。あと${seconds}秒で自動開始します`
+      : `2人以上集まったので ${seconds}秒後に自動開始します`;
     autoStartNote.classList.remove("hidden");
+  }
+
+  function updateWaitBtn() {
+    const show = phase === "lobby" && myRole === "player" && autoStartActive && !myUsedWait;
+    waitBtn.classList.toggle("hidden", !show);
   }
 
   function showCountdown(seconds) {
@@ -444,6 +461,12 @@
 
   queueBtn.addEventListener("click", () => {
     send({ type: "queue" });
+  });
+
+  waitBtn.addEventListener("click", () => {
+    myUsedWait = true;
+    updateWaitBtn();
+    send({ type: "wait" });
   });
 
   connect();

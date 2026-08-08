@@ -73,6 +73,11 @@
   font-size: 0.85rem;
 }
 
+.wait-btn {
+  margin-top: 12px;
+  width: 100%;
+}
+
 .join-error {
   margin-top: 12px;
   color: #e0555f;
