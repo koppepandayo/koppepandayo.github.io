@@ -144,8 +144,38 @@
   font-size: 0.85rem;
 }
 
+.pp-subheading {
+  margin-top: 18px;
+  font-size: 0.82rem;
+  color: var(--accent2);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.02em;
+}
+
+.pp-lesson-section {
+  margin-top: 8px;
+  padding: 14px 16px;
+  background: rgba(124, 92, 255, 0.08);
+  border-left: 3px solid var(--accent);
+  border-radius: 8px;
+}
+
+.pp-lesson-section .pp-subheading {
+  margin-top: 0;
+  color: var(--accent);
+}
+
+.pp-lesson {
+  margin-top: 10px;
+  color: var(--text);
+  white-space: pre-wrap;
+  line-height: 1.65;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.86rem;
+}
+
 .pp-description {
-  margin-top: 14px;
+  margin-top: 10px;
   color: var(--text-dim);
   white-space: pre-wrap;
   line-height: 1.7;

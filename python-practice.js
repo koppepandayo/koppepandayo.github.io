@@ -7,6 +7,11 @@ const PROBLEMS = [
     title: "Hello, World!",
     difficulty: 1,
     description: "「Hello, World!」という文字列を1行で出力してください。\n\n入力はありません。",
+    lesson:
+      "Pythonでは print(...) で画面に文字を出力します。文字列は \"...\" または\n" +
+      "'...' で囲みます。Javaと違ってクラスやmainメソッドは不要で、\n" +
+      "書いたコードがそのまま上から実行されます。\n\n" +
+      "例:\nprint(\"こんにちは\")",
     starter: "# ここに書いてください\n",
     tests: [{ stdin: "", expected: "Hello, World!" }],
   },
@@ -18,6 +23,12 @@ const PROBLEMS = [
     description:
       "標準入力から半角スペース区切りで整数 a と b が与えられます。\n" +
       "a + b の値を出力してください。\n\n入力例: 3 5\n出力例: 8",
+    lesson:
+      "標準入力から1行読み込むには input() を使います。整数に変換するには\n" +
+      "int(...) を使います。半角スペース区切りの複数の値は .split() で\n" +
+      "分割してからそれぞれ変換します。\n\n" +
+      "例:\nx, y = input().split()\nx = int(x)\ny = int(y)\nprint(x + y)\n\n" +
+      "まとめて書くと x, y = map(int, input().split()) とも書けます。",
     starter: "a, b = map(int, input().split())\n# ここに書いてください\n",
     tests: [
       { stdin: "3 5", expected: "8" },
@@ -33,6 +44,11 @@ const PROBLEMS = [
     description:
       "標準入力から整数 n が与えられます。\n" +
       "n が偶数なら \"Even\"、奇数なら \"Odd\" を出力してください。",
+    lesson:
+      "条件分岐は if 条件: ... elif 条件: ... else: ... で書きます。\n" +
+      "Javaと違って波括弧{}は使わず、インデント(字下げ)でブロックを\n" +
+      "表します。比較演算子は ==, !=, <, > など。\n\n" +
+      "例:\nscore = 75\nif score >= 60:\n    print(\"合格\")\nelse:\n    print(\"不合格\")",
     starter: "n = int(input())\n# ここに書いてください\n",
     tests: [
       { stdin: "4", expected: "Even" },
@@ -48,6 +64,11 @@ const PROBLEMS = [
     description:
       "標準入力から整数 n が与えられます。\n" +
       "1 から n までの整数の合計を for 文または while 文で計算して出力してください。",
+    lesson:
+      "繰り返しには for 文と range() がよく使われます。range(n) は\n" +
+      "0からn-1まで、range(1, n+1) は1からnまでの数列を作ります。\n" +
+      "while 条件: も使えます。\n\n" +
+      "例:\nfor i in range(3):\n    print(i)\n# 0, 1, 2 が出力される",
     starter: "n = int(input())\ntotal = 0\n# ここに書いてください\n\nprint(total)\n",
     tests: [
       { stdin: "5", expected: "15" },
@@ -64,6 +85,11 @@ const PROBLEMS = [
       "1行目に整数の個数 n、2行目に半角スペース区切りで n 個の整数が与えられます。\n" +
       "リストに格納し、その中の最大値を出力してください(max関数は使わずに書いてみましょう)。\n\n" +
       "入力例:\n5\n3 1 4 1 5\n出力例:\n5",
+    lesson:
+      "複数の値をまとめて扱うにはリスト[]を使います。\n" +
+      "list(map(int, input().split())) で入力を整数のリストに変換\n" +
+      "できます。for x in nums: で全要素を順に取り出せます。\n\n" +
+      "例:\nnums = [3, 1, 4]\nfor x in nums:\n    print(x)",
     starter:
       "n = int(input())\nnums = list(map(int, input().split()))\n# ここに書いてください\n",
     tests: [
@@ -78,6 +104,11 @@ const PROBLEMS = [
     title: "文字列を逆順にする",
     difficulty: 2,
     description: "標準入力から1行の文字列 s が与えられます。\ns を逆順にして出力してください。",
+    lesson:
+      "文字列はスライス s[開始:終了:step] で部分的に取り出せます。\n" +
+      "s[::-1] はstepに-1を指定することで文字列全体を逆順にする、\n" +
+      "よく使われる書き方です。\n\n" +
+      "例:\ns = \"abc\"\nprint(s[::-1])  # \"cba\"",
     starter: "s = input()\n# ここに書いてください\n",
     tests: [
       { stdin: "hello", expected: "olleh" },
@@ -93,6 +124,10 @@ const PROBLEMS = [
     description:
       "標準入力から整数 n が与えられます。\n" +
       "n の階乗を計算する関数 factorial(n) を自分で定義し、\n呼び出して結果を出力してください。",
+    lesson:
+      "関数は def 関数名(引数): で定義し、return で値を返します。\n" +
+      "Javaと違い戻り値の型は書きません。\n\n" +
+      "例:\ndef square(x):\n    return x * x",
     starter:
       "def factorial(n):\n    # ここに書いてください\n    pass\n\n\nn = int(input())\nprint(factorial(n))\n",
     tests: [
@@ -110,6 +145,11 @@ const PROBLEMS = [
       "標準入力から整数 n が与えられます。\n" +
       "フィボナッチ数列 (F(0)=0, F(1)=1, F(n)=F(n-1)+F(n-2)) の n 番目の値を\n" +
       "再帰を使って計算する関数を定義し、結果を出力してください。",
+    lesson:
+      "関数が自分自身を呼び出すことを再帰と呼びます。再帰には必ず\n" +
+      "「それ以上分解しない基本ケース」が必要です。\n\n" +
+      "例:\ndef total(n):\n    if n == 0:\n        return 0       # 基本ケース\n" +
+      "    return n + total(n - 1)  # 自分自身を呼ぶ",
     starter:
       "def fib(n):\n    # ここに書いてください\n    pass\n\n\nn = int(input())\nprint(fib(n))\n",
     tests: [
@@ -128,6 +168,14 @@ const PROBLEMS = [
       "name と age を持つ Person クラスを定義し、\n" +
       "「名前はNAME、年齢はAGE歳です」という形式(NAME, AGEは実際の値に置き換え)で\n" +
       "出力するメソッドを呼び出してください。\n\n入力例: Taro 20\n出力例: 名前はTaro、年齢は20歳です",
+    lesson:
+      "クラスは class クラス名: で定義します。コンストラクタは\n" +
+      "__init__(self, ...) という特別な名前のメソッドで、インスタンス\n" +
+      "生成時に自動で呼ばれます。self は自分自身を指し、\n" +
+      "self.name = name のように書くとフィールドになります。\n\n" +
+      "例:\nclass Dog:\n    def __init__(self, name):\n        self.name = name\n\n" +
+      "    def bark(self):\n        print(self.name + \": わん\")\n\n" +
+      "# 使う側: d = Dog(\"ポチ\"); d.bark()",
     starter:
       "class Person:\n    def __init__(self, name, age):\n        # ここに書いてください\n        pass\n\n" +
       "    def introduce(self):\n        # ここに書いてください\n        pass\n\n\n" +
@@ -146,6 +194,10 @@ const PROBLEMS = [
       "標準入力から半角スペース区切りで整数 a と b が与えられます。\n" +
       "a を b で割った商(整数除算)を出力してください。\n" +
       "ただし b が 0 の場合は例外を except し、\"Cannot divide by zero\" と出力してください。",
+    lesson:
+      "エラーが起きそうな処理は try: ... except 例外の型: ... で\n" +
+      "囲みます。0で割ると ZeroDivisionError が発生します。\n\n" +
+      "例:\ntry:\n    x = 10 // 0\nexcept ZeroDivisionError:\n    print(\"エラーが起きました\")",
     starter: "a, b = map(int, input().split())\n# try/except を使って書いてください\n",
     tests: [
       { stdin: "10 2", expected: "5" },
@@ -163,6 +215,11 @@ const PROBLEMS = [
       "3行目に調べたい単語 target が与えられます。\n" +
       "辞書(dict)を使って各単語の出現回数を数え、target の出現回数を出力してください。\n\n" +
       "入力例:\n5\napple banana apple orange apple\napple\n出力例:\n3",
+    lesson:
+      "キーと値の組を扱うには辞書(dict){}を使います。\n" +
+      "d[key] = value で追加・更新、d.get(key, デフォルト値) で\n" +
+      "キーが無い場合の値も指定して取得できます。\n\n" +
+      "例:\nd = {}\nd[\"apple\"] = 1\nprint(d.get(\"banana\", 0))  # 0",
     starter:
       "n = int(input())\nwords = input().split()\ntarget = input()\ncounts = {}\n# ここに書いてください\n",
     tests: [
@@ -180,6 +237,10 @@ const PROBLEMS = [
       "標準入力から整数 n が与えられます。\n" +
       "1 から n まで、3の倍数のときは \"Fizz\"、5の倍数のときは \"Buzz\"、\n" +
       "両方の倍数のときは \"FizzBuzz\"、それ以外はその数値を1行ずつ出力してください。",
+    lesson:
+      "これまで学んだ for 文・if 文・剰余演算子(%)を組み合わせて解く\n" +
+      "総合問題です。複数の条件を順に判定するときは if / elif / else を\n" +
+      "使い、より狭い条件(15の倍数)を先に判定するのがポイントです。",
     starter: "n = int(input())\n# ここに書いてください\n",
     tests: [
       { stdin: "5", expected: "1\n2\nFizz\n4\nBuzz" },
@@ -240,6 +301,7 @@ const el = {
   list: document.getElementById("pp-problem-list"),
   title: document.getElementById("pp-title"),
   difficulty: document.getElementById("pp-difficulty"),
+  lesson: document.getElementById("pp-lesson"),
   description: document.getElementById("pp-description"),
   code: document.getElementById("pp-code"),
   resetBtn: document.getElementById("pp-reset-btn"),
@@ -293,6 +355,7 @@ function selectProblem(id) {
 
   el.title.textContent = problem.title;
   el.difficulty.textContent = "難易度: " + "★".repeat(problem.difficulty);
+  el.lesson.textContent = problem.lesson;
   el.description.textContent = problem.description;
 
   const saved = progressData.codes[id];
