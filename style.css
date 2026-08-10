@@ -185,6 +185,10 @@ body {
   grid-template-columns: 1fr;
 }
 
+.project-card + .project-card {
+  margin-top: 24px;
+}
+
 .project-image {
   aspect-ratio: 16 / 9;
   overflow: hidden;
