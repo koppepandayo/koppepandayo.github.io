@@ -597,7 +597,10 @@
   });
 
   queueBtn.addEventListener("click", () => {
-    send({ type: "queue" });
+    const account = getAccount();
+    const name = (account.discord && account.discord.username) || account.username || "Guest";
+    const avatar = account.discord ? account.discord.avatar : null;
+    send({ type: "queue", name, avatar, deviceId, platform: "web" });
   });
 
   waitBtn.addEventListener("click", () => {
