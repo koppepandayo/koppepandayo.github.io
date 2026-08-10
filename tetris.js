@@ -69,6 +69,13 @@
       .catch(() => {});
   }
 
+  // Every ranking row's avatar URL is one of exactly two shapes - mc-heads.net (submitted
+  // by the Minecraft mod) or Discord's CDN (submitted by this site) - so that alone tells
+  // us which platform the row came from, no server-side field needed.
+  function platformTag(avatar) {
+    return avatar && avatar.indexOf("mc-heads.net") !== -1 ? "[MC]" : "[Web]";
+  }
+
   function makeAvatarImg(url) {
     const img = document.createElement("img");
     img.className = "player-avatar";
@@ -94,7 +101,7 @@
           info.className = "rank-info";
           const name = document.createElement("div");
           name.className = "rank-name";
-          name.textContent = s.name;
+          name.textContent = `${s.name} ${platformTag(s.avatar)}`;
           const score = document.createElement("div");
           score.className = "rank-score";
           score.textContent = `${s.score}点`;

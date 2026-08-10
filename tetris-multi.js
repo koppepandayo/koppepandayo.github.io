@@ -161,6 +161,12 @@
     return img;
   }
 
+  // The table server reports this directly (it's whatever the client claimed on join),
+  // unlike the solo/wins leaderboards where we infer it from the avatar URL instead.
+  function platformTag(platform) {
+    return platform === "mc" ? "[MC]" : "[Web]";
+  }
+
   function renderPlayerList(players) {
     playerCountEl.textContent = players.length;
     playerListEl.innerHTML = "";
@@ -168,7 +174,7 @@
       const li = document.createElement("li");
       li.appendChild(makeAvatarImg(p.avatar));
       const name = document.createElement("span");
-      name.textContent = (p.ready ? "✓ " : "") + p.name + (p.id === myId ? " (あなた)" : "");
+      name.textContent = (p.ready ? "✓ " : "") + p.name + ` ${platformTag(p.platform)}` + (p.id === myId ? " (あなた)" : "");
       if (p.ready) name.classList.add("ready-name");
       li.appendChild(name);
       playerListEl.appendChild(li);
@@ -251,7 +257,7 @@
       num.className = "rank-num";
       num.textContent = `#${r.rank}`;
       const name = document.createElement("span");
-      name.textContent = r.name + (r.id === myId ? " (あなた)" : "");
+      name.textContent = `${r.name} ${platformTag(r.platform)}` + (r.id === myId ? " (あなた)" : "");
       li.appendChild(num);
       li.appendChild(makeAvatarImg(r.avatar));
       li.appendChild(name);
@@ -304,7 +310,10 @@
           info.className = "rank-info";
           const name = document.createElement("div");
           name.className = "rank-name";
-          name.textContent = w.name;
+          // Unlike the live table above, this list comes from tetris-scores-server's D1 table,
+          // which (like the solo leaderboard) has no platform field - infer it from the avatar
+          // URL instead: mc-heads.net (Minecraft mod) vs Discord's CDN (this site).
+          name.textContent = `${w.name} ${w.avatar && w.avatar.indexOf("mc-heads.net") !== -1 ? "[MC]" : "[Web]"}`;
           const score = document.createElement("div");
           score.className = "rank-score";
           score.textContent = `${w.win_count}勝`;
@@ -584,7 +593,7 @@
     const account = getAccount();
     const name = (account.discord && account.discord.username) || account.username || "Guest";
     const avatar = account.discord ? account.discord.avatar : null;
-    send({ type: "join", name, avatar, deviceId });
+    send({ type: "join", name, avatar, deviceId, platform: "web" });
   });
 
   queueBtn.addEventListener("click", () => {
