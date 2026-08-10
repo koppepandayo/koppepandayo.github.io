@@ -541,6 +541,32 @@
     }
   });
 
+  // requestAnimationFrame stops firing while the window is minimized/hidden,
+  // which freezes the local engine (pieces stop falling, incoming garbage
+  // just queues up unapplied) -- effectively making you unkillable if you
+  // just minimize mid-match. Auto-forfeit after a short grace period instead
+  // of letting that stand as a way to dodge a loss. setTimeout still fires
+  // in a hidden/minimized tab, so this works even though the render loop
+  // doesn't.
+  const HIDDEN_FORFEIT_MS = 5000;
+  let hiddenForfeitTimer = null;
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+      if (engine && engine.running && inThisMatch && !hiddenForfeitTimer) {
+        hiddenForfeitTimer = setTimeout(() => {
+          hiddenForfeitTimer = null;
+          if (document.hidden && engine && engine.running) {
+            send({ type: "ko" });
+          }
+        }, HIDDEN_FORFEIT_MS);
+      }
+    } else if (hiddenForfeitTimer) {
+      clearTimeout(hiddenForfeitTimer);
+      hiddenForfeitTimer = null;
+    }
+  });
+
   // ---- UI wiring ----
 
   function getAccount() {
