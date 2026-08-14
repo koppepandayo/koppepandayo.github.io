@@ -44,6 +44,15 @@
   color: var(--text-dim);
 }
 
+.game-select-cards { max-width: 620px; grid-template-columns: repeat(2, minmax(220px, 1fr)); }
+.game-select-card { min-height: 240px; justify-content: center; }
+.game-mark { width: 76px; height: 76px; display: grid; place-items: center; margin-bottom: 8px; }
+.tetris-mark { border: 4px solid var(--accent2); color: var(--accent2); font-size: 2.6rem; font-weight: 900; box-shadow: 8px 8px 0 rgba(124, 92, 255, .16); }
+.puyo-mark { grid-template-columns: repeat(2, 34px); grid-template-rows: repeat(2, 34px); gap: 4px; }
+.puyo-mark i { display: block; width: 34px; height: 34px; border-radius: 50%; box-shadow: inset -5px -6px 0 rgba(0,0,0,.2), inset 5px 5px 0 rgba(255,255,255,.25); }
+.puyo-mark i:nth-child(1) { background:#e0555f; }.puyo-mark i:nth-child(2) { background:#4fd67a; }.puyo-mark i:nth-child(3) { background:#4a9fe0; }.puyo-mark i:nth-child(4) { background:#f0d048; }
+@media (max-width: 560px) { .game-select-cards { grid-template-columns: 1fr; } .game-select-card { min-height: 190px; } }
+
 .account-modal {
   position: fixed;
   inset: 0;

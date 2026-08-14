@@ -1,0 +1,16 @@
+.puyo-glow { background: radial-gradient(circle, rgba(86, 224, 158, .12), transparent 66%); }
+.puyo-title { background-image: linear-gradient(90deg, #57e39a, #63b8ff, #f46f8b, #f5da5f); }
+.puyo-layout { flex-wrap: nowrap; }
+.puyo-board-wrap { border-color: rgba(87, 227, 154, .35); }
+#puyo-board-canvas { display: block; width: 288px; height: 576px; }
+#puyo-next-canvas { display: block; margin: 0 auto; }
+.puyo-credit { max-width: 720px; margin-top: 26px; color: var(--text-dim); font-size: .72rem; line-height: 1.6; text-align: center; }
+
+@media (max-width: 720px) {
+  .puyo-layout { flex-direction: column; }
+  .puyo-layout > .tetris-side:first-child .tetris-panel:nth-child(n+3) { display: none; }
+  .puyo-board-wrap { width: min(66vw, 220px); }
+  #puyo-board-canvas { width: 100%; height: auto; }
+  #puyo-next-canvas { width: 58px; height: auto; }
+  .puyo-touch { max-width: 310px; margin-top: 2px; }
+}

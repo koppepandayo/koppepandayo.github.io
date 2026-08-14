@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Games | koppepandayo</title>
+<meta name="description" content="koppepandayoのミニゲーム一覧">
+<link rel="icon" href="assets/koppecat.jpg"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="tetris.css"><link rel="stylesheet" href="tetris-menu.css">
+</head>
+<body>
+<div class="bg-grid"></div><div class="bg-glow"></div>
+<header class="hero tetris-hero"><nav class="nav"><a class="nav-logo" href="index.html">koppepandayo</a><div class="nav-links"><a href="index.html">Home</a><a href="index.html#links">Links</a></div></nav></header>
+<main class="tetris-main menu-main">
+  <p class="hero-eyebrow">// choose your game</p><h1 class="tetris-title">MINI GAMES</h1>
+  <div class="menu-cards">
+    <a class="card menu-card" href="games-solo.html"><span class="menu-card-icon">★</span><span class="menu-card-title">ソロプレイ</span><span class="menu-card-desc">テトリスかカラーチェインを選んで遊ぶ</span></a>
+    <a class="card menu-card" href="tetris-multi.html"><span class="menu-card-icon">⚔</span><span class="menu-card-title">マルチプレイ</span><span class="menu-card-desc">現在はテトリスの最大10人バトル</span></a>
+    <button class="card menu-card" id="account-btn" type="button"><span class="menu-card-icon">●</span><span class="menu-card-title">アカウント設定</span><span class="menu-card-desc" id="account-summary">ゲスト</span></button>
+  </div>
+</main>
+<div id="account-modal" class="account-modal hidden"><div class="card account-modal-inner">
+  <div class="account-modal-header"><p class="multi-phase-label">アカウント設定</p><button id="account-close" class="account-close" aria-label="閉じる">✕</button></div>
+  <div id="username-section"><label class="account-label" for="username-input">ユーザー名</label><div class="account-row"><input id="username-input" type="text" maxlength="20" placeholder="Guest"><button id="username-save" class="btn btn-primary">保存</button></div></div>
+  <div class="account-divider"></div>
+  <div id="discord-disconnected"><p class="account-note">Discordでログインするとアイコンと名前がランキングに載ります。</p><button id="discord-login-btn" class="btn btn-ghost discord-btn">Discordでログイン</button></div>
+  <div id="discord-connected" class="hidden"><div class="discord-profile"><img id="discord-avatar" class="discord-avatar" alt=""><span id="discord-name"></span></div><button id="discord-logout-btn" class="btn btn-ghost">ログアウト</button></div>
+</div></div>
+<script src="tetris-menu.js"></script>
+</body></html>
