@@ -68,7 +68,10 @@
     ctx.strokeStyle = "rgba(255,255,255,.035)"; ctx.lineWidth = 1;
     for (let x = 1; x < 6; x++) { ctx.beginPath(); ctx.moveTo(x*CELL, 0); ctx.lineTo(x*CELL, board.height); ctx.stroke(); }
     for (let y = 1; y < 12; y++) { ctx.beginPath(); ctx.moveTo(0, y*CELL); ctx.lineTo(board.width, y*CELL); ctx.stroke(); }
-    for (let y = 0; y < 12; y++) for (let x = 0; x < 6; x++) if (self.grid[y][x]) drawPuyo(ctx, x*CELL, y*CELL, self.grid[y][x], CELL);
+    for (let y = 0; y < 12; y++) for (let x = 0; x < 6; x++) if (self.grid[y][x]) {
+      const erasing = self.erasingCells && self.erasingCells.has(`${x},${y}`);
+      if (!erasing || Math.floor(self.resolveElapsed / 80) % 2 === 0) drawPuyo(ctx, x*CELL, y*CELL, self.grid[y][x], CELL);
+    }
     if (self.current && !self.gameOver) for (const cell of self.cellsOf()) if (cell.y >= 0) drawPuyo(ctx, cell.x*CELL, cell.y*CELL, cell.color, CELL);
 
     scoreEl.textContent = self.score.toLocaleString();
@@ -122,7 +125,7 @@
     onChange: render,
     onLock: function (self, result) {
       if (result.chainCount) {
-        showToast(result.chainCount > 1 ? `${result.chainCount} CHAIN!` : `${result.erasedCount} CLEAR`);
+        showToast(result.allClear ? "全消し！ +3600" : result.chainCount > 1 ? `${result.chainCount}連鎖！` : `${result.erasedCount}個消し`);
         TetrisAudio.playSFX(result.chainCount >= 4 ? "tetris" : result.chainCount >= 2 ? "line3" : "line1");
       } else TetrisAudio.playSFX("lock");
     },

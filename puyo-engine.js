@@ -14,6 +14,8 @@
   const SOFT_DROP_ARR = 20; // ms between soft-drop steps while held
   const LOCK_DELAY = 300;
   const MIN_GROUP_SIZE = 4;
+  const FALL_ANIMATION_MS = 140;
+  const ERASE_ANIMATION_MS = 480;
 
   const COLOR_NAMES = ["R", "G", "B", "Y"];
   const COLORS = {
@@ -23,17 +25,12 @@
     Y: "#f0d048",
   };
 
-  const CHAIN_BONUS = [0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512];
+  const CHAIN_BONUS = [0, 8, 16, 32, 64, 96, 128, 160, 192, 224, 256, 288, 320, 352, 384, 416, 448, 480, 512, 544, 576, 608, 640, 672];
+  const PIECE_BONUS = [0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 10, 10];
   const COLOR_BONUS = [0, 0, 3, 6, 12, 24];
 
-  function groupBonus(size) {
-    if (size <= 4) return 0;
-    if (size === 5) return 2;
-    if (size === 6) return 3;
-    if (size <= 8) return 4;
-    if (size <= 10) return 5;
-    if (size <= 12) return 6;
-    return 7;
+  function pieceBonus(size) {
+    return PIECE_BONUS[Math.min(size, PIECE_BONUS.length - 1)];
   }
 
   function chainBonus(chainCount) {
@@ -97,6 +94,12 @@
       this.softDropHeld = false;
       this.softDropElapsed = 0;
       this.current = null;
+      this.resolving = false;
+      this.resolvePhase = null;
+      this.resolveElapsed = 0;
+      this.erasingCells = null;
+      this._resolveGained = 0;
+      this._resolveErased = 0;
       this._spawnNext();
     }
 
@@ -132,14 +135,19 @@
     }
 
     _spawnPiece(colors) {
-      // Axis spawns on the top visible row (y=0) with the child a row above
-      // it (invisible, rot 0). Spawning both cells off-grid (y<0) would mean
-      // _collides() never checks the stack at all, so game-over would never
-      // fire no matter how full the spawn column got.
-      return { colors, rot: 0, x: Math.floor(COLS / 2) - 1, y: 0 };
+      return { colors, rot: 0, x: Math.floor(COLS / 2) - 1, y: -1 };
     }
 
     _spawnNext() {
+      // The tutorial's spawn/game-over rule checks the third column's top
+      // cell before creating the next pair. The pair itself starts just above
+      // the visible board and falls in naturally.
+      if (this.grid[0][2]) {
+        this.current = null;
+        this._endGame();
+        this.onChange(this);
+        return;
+      }
       this.current = this._spawnPiece(this.nextQueue.shift());
       this.nextQueue.push(this._nextPairColors());
       this.lockTimer = null;
@@ -149,6 +157,7 @@
     }
 
     tryMove(dx, dy) {
+      if (!this.current || this.resolving) return false;
       const moved = { ...this.current, x: this.current.x + dx, y: this.current.y + dy };
       if (this._collides(moved)) return false;
       this.current = moved;
@@ -156,6 +165,7 @@
     }
 
     tryRotate(dir) {
+      if (!this.current || this.resolving) return false;
       const rot = (this.current.rot + dir + 4) % 4;
       const base = { ...this.current, rot };
       const kicks = [[0, 0], [1, 0], [-1, 0], [0, -1]];
@@ -176,6 +186,7 @@
     }
 
     hardDrop() {
+      if (!this.current || this.resolving) return;
       let dist = 0;
       while (!this._collides({ ...this.current, y: this.current.y + 1 })) {
         this.current = { ...this.current, y: this.current.y + 1 };
@@ -187,13 +198,12 @@
 
     _lockPiece() {
       for (const cell of this.cellsOf(this.current)) {
-        if (cell.y < 0) {
-          this._endGame();
-          return;
-        }
-        this.grid[cell.y][cell.x] = cell.color;
+        // Like the tutorial, cells still above the visible field are not
+        // written. The next-spawn check then decides game over.
+        if (cell.y >= 0) this.grid[cell.y][cell.x] = cell.color;
       }
-      this._resolveChain();
+      this.current = null;
+      this._beginResolve();
     }
 
     _applyGravity() {
@@ -232,36 +242,77 @@
       return groups;
     }
 
-    _resolveChain() {
-      let totalGained = 0;
-      let totalErased = 0;
-      let chainCount = 0;
+    _beginResolve() {
+      this.resolving = true;
+      this.resolvePhase = "fall";
+      this.resolveElapsed = 0;
+      this.erasingCells = null;
+      this.chainCount = 0;
+      this._resolveGained = 0;
+      this._resolveErased = 0;
+      this._applyGravity();
+      this.onChange(this);
+    }
 
-      while (true) {
-        this._applyGravity();
+    _updateResolve(dt) {
+      this.resolveElapsed += dt;
+
+      if (this.resolvePhase === "fall" && this.resolveElapsed >= FALL_ANIMATION_MS) {
         const groups = this._findErasableGroups();
-        if (groups.length === 0) break;
-        chainCount++;
-
-        const colors = new Set(groups.map((g) => g.color));
-        let erasedThisStep = 0;
-        let groupBonusSum = 0;
-        for (const g of groups) {
-          erasedThisStep += g.cells.length;
-          groupBonusSum += groupBonus(g.cells.length);
-          for (const [x, y] of g.cells) this.grid[y][x] = null;
+        if (groups.length === 0) {
+          this._finishResolve();
+          return;
         }
 
-        const bonus = Math.max(1, chainBonus(chainCount) + COLOR_BONUS[Math.min(colors.size, COLOR_BONUS.length - 1)] + groupBonusSum);
-        totalGained += erasedThisStep * 10 * bonus;
-        totalErased += erasedThisStep;
+        this.chainCount++;
+        this.maxChain = Math.max(this.maxChain, this.chainCount);
+        const colors = new Set(groups.map((g) => g.color));
+        const erasedThisStep = groups.reduce((sum, g) => sum + g.cells.length, 0);
+        const scale = Math.max(1,
+          chainBonus(this.chainCount) +
+          pieceBonus(erasedThisStep) +
+          COLOR_BONUS[Math.min(colors.size, COLOR_BONUS.length - 1)]
+        );
+        const gained = erasedThisStep * 10 * scale;
+        this.score += gained;
+        this._resolveGained += gained;
+        this._resolveErased += erasedThisStep;
+        this._eraseGroups = groups;
+        this.erasingCells = new Set(groups.flatMap((g) => g.cells.map(([x, y]) => `${x},${y}`)));
+        this.resolvePhase = "erase";
+        this.resolveElapsed = 0;
+        return;
       }
 
-      if (totalGained > 0) this.score += totalGained;
-      if (chainCount > this.maxChain) this.maxChain = chainCount;
-      this.chainCount = chainCount;
+      if (this.resolvePhase === "erase" && this.resolveElapsed >= ERASE_ANIMATION_MS) {
+        for (const group of this._eraseGroups) {
+          for (const [x, y] of group.cells) this.grid[y][x] = null;
+        }
+        this._eraseGroups = null;
+        this.erasingCells = null;
+        this._applyGravity();
+        this.resolvePhase = "fall";
+        this.resolveElapsed = 0;
+      }
+    }
 
-      this.onLock(this, { chainCount, gained: totalGained, erasedCount: totalErased });
+    _finishResolve() {
+      const allClear = this._resolveErased > 0 && this.grid.every((row) => row.every((cell) => !cell));
+      if (allClear) {
+        this.score += 3600;
+        this._resolveGained += 3600;
+      }
+      const result = {
+        chainCount: this.chainCount,
+        gained: this._resolveGained,
+        erasedCount: this._resolveErased,
+        allClear,
+      };
+      this.resolving = false;
+      this.resolvePhase = null;
+      this.resolveElapsed = 0;
+      this.erasingCells = null;
+      this.onLock(this, result);
       this._spawnNext();
     }
 
@@ -280,7 +331,7 @@
     }
 
     handleAction(action) {
-      if (!this.running || this.paused) return;
+      if (!this.running || this.paused || this.resolving || !this.current) return;
       switch (action) {
         case "left": this.tryMove(-1, 0); this._resetLockIfGrounded(); break;
         case "right": this.tryMove(1, 0); this._resetLockIfGrounded(); break;
@@ -316,6 +367,14 @@
       this.elapsed += dt;
       // Gentle difficulty ramp over time instead of a line-clear-based level.
       this.dropInterval = Math.max(200, 800 - Math.floor(this.elapsed / 20000) * 60);
+
+      if (this.resolving) {
+        this._updateResolve(dt);
+        this.onChange(this);
+        return;
+      }
+
+      if (!this.current) return;
 
       if (this.dasDirection) {
         this.dasElapsed += dt;
