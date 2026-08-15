@@ -158,6 +158,10 @@
     img.className = "player-avatar";
     img.src = url || "assets/koppecat.jpg";
     img.alt = "";
+    // Discord avatar URLs are hash-pinned to a specific upload and 404 once
+    // the user changes their profile picture, unlike mc-heads.net's
+    // always-current-skin URLs -- fall back instead of showing a broken image.
+    img.onerror = () => { img.onerror = null; img.src = "assets/koppecat.jpg"; };
     return img;
   }
 

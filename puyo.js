@@ -103,7 +103,9 @@
   }
 
   function avatar(url) {
-    const img = document.createElement("img"); img.className = "player-avatar"; img.src = url || "assets/koppecat.jpg"; img.alt = ""; return img;
+    const img = document.createElement("img"); img.className = "player-avatar"; img.src = url || "assets/koppecat.jpg"; img.alt = "";
+    img.onerror = () => { img.onerror = null; img.src = "assets/koppecat.jpg"; };
+    return img;
   }
 
   function loadRanking() {
@@ -148,7 +150,7 @@
     if (e.code === "ArrowLeft" && !e.repeat) engine.startDas("left");
     else if (e.code === "ArrowRight" && !e.repeat) engine.startDas("right");
     else if (e.code === "ArrowDown") { engine.softDropHeld = true; if (!e.repeat) engine.handleAction("down"); }
-    else if (e.code === "KeyP") { engine.togglePause(); overlayText.textContent="PAUSED"; overlayScore.textContent=""; startBtn.classList.add("hidden"); overlay.classList.toggle("hidden", !engine.paused); }
+    else if (e.code === "KeyP") { if (!engine.running) return; engine.togglePause(); overlayText.textContent="PAUSED"; overlayScore.textContent=""; startBtn.classList.add("hidden"); overlay.classList.toggle("hidden", !engine.paused); }
     else if (keyMap[e.code]) engine.handleAction(keyMap[e.code]);
   });
   document.addEventListener("keyup", e => {
