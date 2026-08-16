@@ -29,6 +29,14 @@
   const PIECE_BONUS = [0, 0, 0, 0, 2, 3, 4, 5, 6, 7, 10, 10];
   const COLOR_BONUS = [0, 0, 3, 6, 12, 24];
 
+  // Multiplayer attack, in shared "garbage cell" units (see tetris-multi.js
+  // for the Tetris-side conversion). Independent of the score bonus tables
+  // above -- deliberately a first-pass tuning, not a reproduction of any
+  // official chain-power table.
+  const CHAIN_ATTACK = [0, 0, 2, 6, 12, 24, 36, 48, 64, 80, 96, 112, 128];
+  const ALL_CLEAR_ATTACK = 30;
+  const MAX_GARBAGE_PER_DROP = 30;
+
   function pieceBonus(size) {
     return PIECE_BONUS[Math.min(size, PIECE_BONUS.length - 1)];
   }
@@ -36,6 +44,11 @@
   function chainBonus(chainCount) {
     if (chainCount < CHAIN_BONUS.length) return CHAIN_BONUS[chainCount];
     return CHAIN_BONUS[CHAIN_BONUS.length - 1];
+  }
+
+  function chainAttack(chainCount) {
+    if (chainCount < CHAIN_ATTACK.length) return CHAIN_ATTACK[chainCount];
+    return CHAIN_ATTACK[CHAIN_ATTACK.length - 1];
   }
 
   function makeGrid() {
@@ -100,6 +113,8 @@
       this.erasingCells = null;
       this._resolveGained = 0;
       this._resolveErased = 0;
+      this._resolveAttack = 0;
+      this.garbageQueue = []; // pending incoming nuisance-puyo counts
       this._spawnNext();
     }
 
@@ -277,6 +292,7 @@
         this.score += gained;
         this._resolveGained += gained;
         this._resolveErased += erasedThisStep;
+        this._resolveAttack += chainAttack(this.chainCount);
         this._eraseGroups = groups;
         this.erasingCells = new Set(groups.flatMap((g) => g.cells.map(([x, y]) => `${x},${y}`)));
         this.resolvePhase = "erase";
@@ -301,19 +317,80 @@
       if (allClear) {
         this.score += 3600;
         this._resolveGained += 3600;
+        this._resolveAttack += ALL_CLEAR_ATTACK;
       }
       const result = {
         chainCount: this.chainCount,
         gained: this._resolveGained,
         erasedCount: this._resolveErased,
+        attack: this._resolveAttack,
         allClear,
       };
       this.resolving = false;
       this.resolvePhase = null;
       this.resolveElapsed = 0;
       this.erasingCells = null;
+      this._applyPendingGarbage(this._resolveAttack);
       this.onLock(this, result);
       this._spawnNext();
+    }
+
+    // Called by the multiplayer client when an attack arrives from another
+    // player (in shared garbage-cell units -- see tetris-multi.js).
+    receiveGarbage(n) {
+      if (n > 0) this.garbageQueue.push(n);
+    }
+
+    // Cancel pending incoming garbage against the attack just sent, same
+    // 1-for-1 logic as TetrisEngine._applyPendingGarbage.
+    _applyPendingGarbage(sentAttack) {
+      let remaining = sentAttack;
+      while (remaining > 0 && this.garbageQueue.length > 0) {
+        const n = this.garbageQueue[0];
+        if (n <= remaining) {
+          remaining -= n;
+          this.garbageQueue.shift();
+        } else {
+          this.garbageQueue[0] -= remaining;
+          remaining = 0;
+        }
+      }
+      if (sentAttack === 0 && this.garbageQueue.length > 0) {
+        const total = this.garbageQueue.reduce((a, b) => a + b, 0);
+        this.garbageQueue = [];
+        this._insertGarbage(total);
+      }
+    }
+
+    // Drops nuisance ("X") puyos spread across the columns, capped per wave
+    // with the remainder queued for the next drop. Placed directly onto
+    // each column's current top -- no gravity pass needed since every
+    // column is already gravity-settled by the time this runs (called only
+    // between a resolve finishing and the next spawn).
+    _insertGarbage(n) {
+      if (n <= 0) return;
+      const total = Math.min(n, MAX_GARBAGE_PER_DROP);
+      const perCol = Math.floor(total / COLS);
+      const remainder = total % COLS;
+      const order = [...Array(COLS).keys()];
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(this.rng() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      const counts = Array(COLS).fill(perCol);
+      for (let i = 0; i < remainder; i++) counts[order[i]]++;
+
+      for (let x = 0; x < COLS; x++) {
+        for (let k = 0; k < counts[x]; k++) {
+          let topY = 0;
+          while (topY < ROWS && !this.grid[topY][x]) topY++;
+          const placeY = topY - 1;
+          if (placeY < 0) continue; // column already full to the top
+          this.grid[placeY][x] = "X";
+        }
+      }
+
+      if (total < n) this.garbageQueue.push(n - total);
     }
 
     _endGame() {

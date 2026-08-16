@@ -81,7 +81,7 @@
       <!-- Battle layout: own board + opponents -->
       <div id="battle-layout" class="battle-layout hidden">
         <div class="tetris-side">
-          <div class="card tetris-panel">
+          <div class="card tetris-panel" id="hold-panel">
             <span class="panel-label">HOLD</span>
             <canvas id="hold-canvas" width="72" height="72"></canvas>
           </div>
@@ -129,6 +129,7 @@
 </main>
 
 <script src="tetris-engine.js"></script>
+<script src="puyo-engine.js"></script>
 <script src="tetris-audio.js"></script>
 <script src="tetris-multi.js"></script>
 </body>

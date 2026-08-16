@@ -5,6 +5,8 @@
   const CELL = 30;
   const COLORS = TetrisEngine.COLORS;
   const SHAPES = TetrisEngine.SHAPES;
+  const PUYO_COLORS = PuyoEngine.COLORS;
+  const holdPanel = document.getElementById("hold-panel");
 
   const connStatus = document.getElementById("conn-status");
   const lobbyPanel = document.getElementById("lobby-panel");
@@ -69,6 +71,7 @@
   let ws = null;
   let myId = null;
   let myRole = "spectator";
+  let myGame = "tetris";
   let phase = "lobby";
   let inThisMatch = false;
   let engine = null;
@@ -143,7 +146,13 @@
         TetrisAudio.startMusic();
         break;
       case "incoming":
-        if (engine) engine.receiveGarbage(msg.amount);
+        // Attacks travel over the wire in a shared "garbage cell" currency.
+        // Tetris converts cells back to lines (its native garbage unit);
+        // Puyo receives cells directly (its garbage is already per-cell).
+        if (engine) {
+          const received = myGame === "tetris" ? Math.ceil(msg.amount / TetrisEngine.COLS) : msg.amount;
+          engine.receiveGarbage(received);
+        }
         TetrisAudio.playSFX("incoming");
         break;
       case "opponent-board":
@@ -280,9 +289,13 @@
       num.textContent = `#${r.rank}`;
       const name = document.createElement("span");
       name.textContent = `${r.name} ${platformTag(r.platform)}` + (r.id === myId ? " (あなた)" : "");
+      const tag = document.createElement("span");
+      tag.className = "game-tag";
+      tag.textContent = ` ${gameTag(r.game)}`;
       li.appendChild(num);
       li.appendChild(makeAvatarImg(r.avatar));
       li.appendChild(name);
+      li.appendChild(tag);
       rankingList.appendChild(li);
     }
     // Stays visible (no auto-hide timer) until the next countdown starts --
@@ -397,7 +410,76 @@
     }
   }
 
+  // childOffset mirrors PuyoEngine's own (private) cellsOf() so opponent/own
+  // rendering can place a Puyo piece's two cells without needing a live
+  // engine instance -- e.g. for opponent boards, which only ever arrive as
+  // plain {colors, rot, x, y} data over the wire, not a real PuyoEngine.
+  function puyoCellsOf(piece) {
+    const offsets = { 0: [0, -1], 1: [1, 0], 2: [0, 1], 3: [-1, 0] };
+    const [dx, dy] = offsets[piece.rot];
+    return [
+      { x: piece.x, y: piece.y, color: piece.colors[0] },
+      { x: piece.x + dx, y: piece.y + dy, color: piece.colors[1] },
+    ];
+  }
+
+  function drawPuyoGridToCanvas(ctx, canvas, grid, current) {
+    const cellSize = canvas.width / PuyoEngine.COLS;
+    ctx.fillStyle = "#0b0b10";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    for (let y = 0; y < grid.length; y++) {
+      for (let x = 0; x < grid[y].length; x++) {
+        if (grid[y][x]) drawCell(ctx, x, y, cellSize, PUYO_COLORS[grid[y][x]] || "#888");
+      }
+    }
+    if (current) {
+      for (const cell of puyoCellsOf(current)) {
+        if (cell.y >= 0) drawCell(ctx, cell.x, cell.y, cellSize, PUYO_COLORS[cell.color] || "#888");
+      }
+    }
+  }
+
+  function drawPuyoNextPreview(queue) {
+    nextCtx.fillStyle = "#0b0b10";
+    nextCtx.fillRect(0, 0, nextCanvas.width, nextCanvas.height);
+    const boxH = nextCanvas.height / 2;
+    const r = Math.min(nextCanvas.width * 0.6, boxH * 0.35);
+    queue.slice(0, 2).forEach((pair, i) => {
+      const cx = nextCanvas.width / 2;
+      const baseY = i * boxH + boxH / 2;
+      for (const [color, cy] of [[pair[1], baseY - r * 0.55], [pair[0], baseY + r * 0.55]]) {
+        nextCtx.beginPath();
+        nextCtx.arc(cx, cy, r / 2, 0, Math.PI * 2);
+        nextCtx.fillStyle = PUYO_COLORS[color] || "#888";
+        nextCtx.fill();
+      }
+    });
+  }
+
   function renderOwn() {
+    if (myGame === "puyo") renderOwnPuyo();
+    else renderOwnTetris();
+  }
+
+  function renderOwnPuyo() {
+    const cellSize = boardCanvas.width / PuyoEngine.COLS;
+    boardCtx.fillStyle = "#0b0b10";
+    boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
+    for (let y = 0; y < PuyoEngine.ROWS; y++) {
+      for (let x = 0; x < PuyoEngine.COLS; x++) {
+        if (engine.grid[y][x]) drawCell(boardCtx, x, y, cellSize, PUYO_COLORS[engine.grid[y][x]] || "#888");
+      }
+    }
+    if (engine.current) {
+      for (const cell of puyoCellsOf(engine.current)) {
+        if (cell.y >= 0) drawCell(boardCtx, cell.x, cell.y, cellSize, PUYO_COLORS[cell.color] || "#888");
+      }
+    }
+    drawPuyoNextPreview(engine.nextQueue);
+    scoreEl.textContent = engine.score;
+  }
+
+  function renderOwnTetris() {
     boardCtx.fillStyle = "#0b0b10";
     boardCtx.fillRect(0, 0, boardCanvas.width, boardCanvas.height);
     for (let y = 0; y < TetrisEngine.ROWS; y++) {
@@ -469,7 +551,8 @@
   function renderOpponentBoard(id, grid, current) {
     if (id === myId) return;
     const entry = getOpponentTile(id);
-    drawGridToCanvas(entry.ctx, entry.canvas, grid, current, 6);
+    if (entry.game === "puyo") drawPuyoGridToCanvas(entry.ctx, entry.canvas, grid, current);
+    else drawGridToCanvas(entry.ctx, entry.canvas, grid, current, 6);
   }
 
   function markOpponentDead(id) {
@@ -490,12 +573,24 @@
       if (p.id === myId) continue;
       const entry = getOpponentTile(p.id);
       entry.nameEl.textContent = p.name;
+      entry.game = p.game === "puyo" ? "puyo" : "tetris";
       entry.tile.classList.remove("dead");
     }
 
     youEliminated.classList.add("hidden");
 
-    engine = new TetrisEngine({
+    myGame = ((players.find((p) => p.id === myId) || {}).game === "puyo") ? "puyo" : "tetris";
+    holdPanel.classList.toggle("hidden", myGame === "puyo");
+
+    engine = myGame === "puyo" ? createPuyoEngine() : createTetrisEngine();
+    engine.start();
+    renderOwn();
+    lastTime = performance.now();
+    requestAnimationFrame(loop);
+  }
+
+  function createTetrisEngine() {
+    return new TetrisEngine({
       onLock(self, info) {
         if (info.label) showToast(info.label);
         if (info.tspin) TetrisAudio.playSFX("tspin");
@@ -505,6 +600,30 @@
         else if (info.cleared === 1) TetrisAudio.playSFX("line1");
         else TetrisAudio.playSFX("lock");
         if (info.attack > 0) {
+          // Convert lines -> shared "garbage cell" currency (board width
+          // cells per line) so the amount is comparable to Puyo's attack.
+          send({ type: "attack", amount: info.attack * TetrisEngine.COLS });
+          TetrisAudio.playSFX("attack");
+        }
+        sendBoard();
+      },
+      onGameOver() {
+        send({ type: "ko" });
+      },
+    });
+  }
+
+  function createPuyoEngine() {
+    return new PuyoEngine({
+      onLock(self, info) {
+        if (info.chainCount > 0) {
+          showToast(info.allClear ? "全消し！" : info.chainCount > 1 ? `${info.chainCount}連鎖！` : `${info.erasedCount}個消し`);
+          TetrisAudio.playSFX(info.chainCount >= 4 ? "tetris" : info.chainCount >= 2 ? "line3" : "line1");
+        } else {
+          TetrisAudio.playSFX("lock");
+        }
+        if (info.attack > 0) {
+          // Already in shared "garbage cell" currency -- no conversion needed.
           send({ type: "attack", amount: info.attack });
           TetrisAudio.playSFX("attack");
         }
@@ -514,10 +633,6 @@
         send({ type: "ko" });
       },
     });
-    engine.start();
-    renderOwn();
-    lastTime = performance.now();
-    requestAnimationFrame(loop);
   }
 
   function sendBoard() {
