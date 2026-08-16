@@ -579,9 +579,7 @@
 
     youEliminated.classList.add("hidden");
 
-    localStorage.setItem("__debug_beginMyMatch", JSON.stringify({ myId, players }));
     myGame = ((players.find((p) => p.id === myId) || {}).game === "puyo") ? "puyo" : "tetris";
-    localStorage.setItem("__debug_myGame", myGame);
     holdPanel.classList.toggle("hidden", myGame === "puyo");
 
     engine = myGame === "puyo" ? createPuyoEngine() : createTetrisEngine();
