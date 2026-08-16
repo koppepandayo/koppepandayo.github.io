@@ -26,6 +26,15 @@
   let autoStartSeconds = null;
   let myUsedWait = false;
   let myReady = false;
+  let selectedGame = "tetris";
+
+  const gameSelect = document.getElementById("game-select");
+  gameSelect.querySelectorAll(".game-select-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      selectedGame = btn.dataset.game;
+      gameSelect.querySelectorAll(".game-select-btn").forEach((b) => b.classList.toggle("active", b === btn));
+    });
+  });
 
   const DEVICE_ID_KEY = "koppepandayo-tetris-device-id";
   let deviceId = localStorage.getItem(DEVICE_ID_KEY);
@@ -171,6 +180,10 @@
     return platform === "mc" ? "[MC]" : "[Web]";
   }
 
+  function gameTag(game) {
+    return game === "puyo" ? "ぷよぷよ" : "テトリス";
+  }
+
   function renderPlayerList(players) {
     playerCountEl.textContent = players.length;
     playerListEl.innerHTML = "";
@@ -181,6 +194,10 @@
       name.textContent = (p.ready ? "✓ " : "") + p.name + ` ${platformTag(p.platform)}` + (p.id === myId ? " (あなた)" : "");
       if (p.ready) name.classList.add("ready-name");
       li.appendChild(name);
+      const tag = document.createElement("span");
+      tag.className = "game-tag";
+      tag.textContent = ` ${gameTag(p.game)}`;
+      li.appendChild(tag);
       playerListEl.appendChild(li);
     }
   }
@@ -200,6 +217,7 @@
       joinBtn.disabled = myRole === "player";
       joinBtn.textContent = myRole === "player" ? "参加済み" : "参加";
       lobbyActions.classList.toggle("hidden", myRole !== "player");
+      gameSelect.querySelectorAll(".game-select-btn").forEach((b) => (b.disabled = myRole === "player"));
     } else if (phase === "countdown") {
       if (inThisMatch) battleLayout.classList.remove("hidden");
       else lobbyPanel.classList.remove("hidden");
@@ -597,14 +615,14 @@
     const account = getAccount();
     const name = (account.discord && account.discord.username) || account.username || "Guest";
     const avatar = account.discord ? account.discord.avatar : null;
-    send({ type: "join", name, avatar, deviceId, platform: "web" });
+    send({ type: "join", name, avatar, deviceId, platform: "web", game: selectedGame });
   });
 
   queueBtn.addEventListener("click", () => {
     const account = getAccount();
     const name = (account.discord && account.discord.username) || account.username || "Guest";
     const avatar = account.discord ? account.discord.avatar : null;
-    send({ type: "queue", name, avatar, deviceId, platform: "web" });
+    send({ type: "queue", name, avatar, deviceId, platform: "web", game: selectedGame });
   });
 
   waitBtn.addEventListener("click", () => {

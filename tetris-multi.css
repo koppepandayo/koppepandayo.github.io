@@ -28,6 +28,45 @@
   margin-bottom: 20px;
 }
 
+.game-select {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.game-select-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.game-select-btn:hover {
+  border-color: var(--accent2);
+}
+
+.game-select-btn.active {
+  border-color: var(--accent2);
+  color: var(--accent2);
+  background: rgba(87, 227, 154, 0.08);
+}
+
+.game-select-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.game-tag {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+
 .lobby-join input {
   flex: 1;
   padding: 10px 12px;
