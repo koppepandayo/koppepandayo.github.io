@@ -579,6 +579,7 @@
 
     youEliminated.classList.add("hidden");
 
+    console.log("DEBUG beginMyMatch", { myId, players: JSON.stringify(players) });
     myGame = ((players.find((p) => p.id === myId) || {}).game === "puyo") ? "puyo" : "tetris";
     holdPanel.classList.toggle("hidden", myGame === "puyo");
 
