@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Custom Runner | koppepandayo</title>
-<meta name="description" content="好きな画像で遊べるオフライン恐竜ゲーム風ランナー">
+<title>Cat Runner | koppepandayo</title>
+<meta name="description" content="こっぺ猫で遊べるオフライン恐竜ゲーム風ランナー">
 <link rel="icon" href="assets/koppecat.jpg">
 <link rel="stylesheet" href="assets/css/style.css">
 <link rel="stylesheet" href="assets/css/tetris.css">
@@ -26,7 +26,7 @@
 
 <main class="runner-main">
   <div class="runner-heading">
-    <div><p class="hero-eyebrow">// your image, your runner</p><h1>CUSTOM RUNNER</h1></div>
+    <div><p class="hero-eyebrow">// koppe cat run</p><h1>CAT RUNNER</h1></div>
     <div class="runner-stats"><span>SCORE <strong id="runner-score">00000</strong></span><span>HI <strong id="runner-high">00000</strong></span></div>
   </div>
 
@@ -43,32 +43,6 @@
     <button id="runner-jump" type="button">JUMP</button>
     <button id="runner-duck" type="button">DUCK</button>
   </div>
-
-  <section class="card runner-customizer">
-    <div class="customizer-heading">
-      <div><p class="panel-label">CUSTOMIZE</p><h2>好きな画像に置き換える</h2></div>
-      <button id="reset-images" class="btn btn-ghost" type="button">画像をすべて戻す</button>
-    </div>
-    <p class="customizer-note">画像はこのブラウザ内だけに保存され、サイトへアップロードされません。透過PNGがおすすめです。</p>
-    <div class="image-picker-grid">
-      <label class="image-picker" for="player-image-input">
-        <span class="image-preview checker"><img id="player-preview" src="assets/koppecat.jpg" alt="プレイヤー画像のプレビュー"></span>
-        <strong>プレイヤー</strong><span>画像を選ぶ</span>
-        <input id="player-image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
-      </label>
-      <label class="image-picker" for="obstacle-image-input">
-        <span class="image-preview checker"><span id="obstacle-preview" class="default-obstacle">▲</span></span>
-        <strong>障害物</strong><span>画像を選ぶ</span>
-        <input id="obstacle-image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
-      </label>
-      <label class="image-picker" for="background-image-input">
-        <span class="image-preview default-background"><img id="background-preview" alt="背景画像のプレビュー"></span>
-        <strong>背景</strong><span>画像を選ぶ</span>
-        <input id="background-image-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
-      </label>
-    </div>
-    <p id="image-status" class="customizer-status" aria-live="polite"></p>
-  </section>
 
   <div class="runner-help card">
     <span><b>Space / ↑</b> ジャンプ</span><span><b>↓</b> しゃがむ・急降下</span><span><b>P</b> ポーズ</span>

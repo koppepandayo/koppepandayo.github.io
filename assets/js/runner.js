@@ -9,18 +9,13 @@
   const messageEl = document.getElementById("runner-message");
   const resultEl = document.getElementById("runner-result");
   const startBtn = document.getElementById("runner-start");
-  const statusEl = document.getElementById("image-status");
 
   const WIDTH = canvas.width;
   const HEIGHT = canvas.height;
   const GROUND_Y = 258;
   const HIGH_KEY = "koppepandayo-runner-high-score";
-  const DB_NAME = "koppepandayo-runner-assets";
-  const STORE_NAME = "images";
-  const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 
-  const assets = { player: null, obstacle: null, background: null };
-  const objectUrls = { player: null, obstacle: null, background: null };
+  const assets = { player: null };
   const player = { x: 104, y: GROUND_Y - 64, w: 64, h: 64, vy: 0, grounded: true, ducking: false };
   let obstacles = [];
   let running = false;
@@ -32,7 +27,6 @@
   let spawnTimer = 1.2;
   let groundOffset = 0;
   let lastTime = performance.now();
-  let dbPromise = null;
 
   highEl.textContent = formatScore(highScore);
 
@@ -48,121 +42,6 @@
       image.src = url;
     });
   }
-
-  function openDb() {
-    if (!dbPromise) {
-      dbPromise = new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, 1);
-        request.onupgradeneeded = () => request.result.createObjectStore(STORE_NAME);
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-      });
-    }
-    return dbPromise;
-  }
-
-  async function dbGet(key) {
-    const db = await openDb();
-    return new Promise((resolve, reject) => {
-      const request = db.transaction(STORE_NAME).objectStore(STORE_NAME).get(key);
-      request.onsuccess = () => resolve(request.result || null);
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  async function dbPut(key, value) {
-    const db = await openDb();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, "readwrite");
-      tx.objectStore(STORE_NAME).put(value, key);
-      tx.oncomplete = resolve;
-      tx.onerror = () => reject(tx.error);
-    });
-  }
-
-  async function dbDelete(key) {
-    const db = await openDb();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, "readwrite");
-      tx.objectStore(STORE_NAME).delete(key);
-      tx.oncomplete = resolve;
-      tx.onerror = () => reject(tx.error);
-    });
-  }
-
-  function previewElement(kind) {
-    return document.getElementById(`${kind}-preview`);
-  }
-
-  function updatePreview(kind, url) {
-    const preview = previewElement(kind);
-    if (kind === "player" || kind === "background") {
-      if (url) preview.src = url;
-      else if (kind === "player") preview.src = "assets/koppecat.jpg";
-      else preview.removeAttribute("src");
-    } else {
-      preview.textContent = url ? "" : "▲";
-      preview.style.backgroundImage = url ? `url("${url}")` : "none";
-      preview.style.backgroundSize = "contain";
-      preview.style.backgroundPosition = "center";
-      preview.style.backgroundRepeat = "no-repeat";
-    }
-  }
-
-  async function applyBlob(kind, blob) {
-    if (objectUrls[kind]) URL.revokeObjectURL(objectUrls[kind]);
-    objectUrls[kind] = blob ? URL.createObjectURL(blob) : null;
-    const url = objectUrls[kind] || (kind === "player" ? "assets/koppecat.jpg" : null);
-    assets[kind] = url ? await loadImage(url) : null;
-    updatePreview(kind, url);
-  }
-
-  async function restoreImages() {
-    try {
-      await Promise.all(["player", "obstacle", "background"].map(async (kind) => {
-        await applyBlob(kind, await dbGet(kind));
-      }));
-    } catch (_) {
-      assets.player = await loadImage("assets/koppecat.jpg").catch(() => null);
-      statusEl.textContent = "保存画像を読み込めなかったため、初期画像を使います。";
-    }
-  }
-
-  async function selectImage(kind, file) {
-    if (!file) return;
-    if (!file.type.startsWith("image/")) {
-      statusEl.textContent = "画像ファイルを選んでください。";
-      return;
-    }
-    if (file.size > MAX_IMAGE_SIZE) {
-      statusEl.textContent = "画像は10MB以下にしてください。";
-      return;
-    }
-    try {
-      await dbPut(kind, file);
-      await applyBlob(kind, file);
-      statusEl.textContent = `${kind === "player" ? "プレイヤー" : kind === "obstacle" ? "障害物" : "背景"}画像を保存しました。`;
-    } catch (_) {
-      statusEl.textContent = "画像を保存できませんでした。別の画像を試してください。";
-    }
-  }
-
-  ["player", "obstacle", "background"].forEach((kind) => {
-    document.getElementById(`${kind}-image-input`).addEventListener("change", (event) => {
-      selectImage(kind, event.target.files[0]);
-      event.target.value = "";
-    });
-  });
-
-  document.getElementById("reset-images").addEventListener("click", async () => {
-    try {
-      await Promise.all(["player", "obstacle", "background"].map(dbDelete));
-      await Promise.all(["player", "obstacle", "background"].map((kind) => applyBlob(kind, null)));
-      statusEl.textContent = "画像を初期状態に戻しました。";
-    } catch (_) {
-      statusEl.textContent = "画像を初期状態に戻せませんでした。";
-    }
-  });
 
   function resetGame() {
     score = 0;
@@ -235,11 +114,7 @@
 
   function spawnObstacle() {
     const height = 42 + Math.random() * 24;
-    let width = height * .72;
-    if (assets.obstacle && assets.obstacle.naturalHeight) {
-      width = height * assets.obstacle.naturalWidth / assets.obstacle.naturalHeight;
-      width = Math.max(30, Math.min(86, width));
-    }
+    const width = height * .72;
     obstacles.push({ x: WIDTH + 20, y: GROUND_Y - height, w: width, h: height, passed: false });
     const speedScale = Math.max(.55, 360 / speed);
     spawnTimer = (.92 + Math.random() * .78) * speedScale;
@@ -294,26 +169,16 @@
 
   function drawBackground() {
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
-    if (assets.background) {
-      const image = assets.background;
-      const scale = Math.max(WIDTH / image.naturalWidth, HEIGHT / image.naturalHeight);
-      const sw = WIDTH / scale;
-      const sh = HEIGHT / scale;
-      ctx.drawImage(image, (image.naturalWidth - sw) / 2, (image.naturalHeight - sh) / 2, sw, sh, 0, 0, WIDTH, HEIGHT);
-      ctx.fillStyle = "rgba(7,8,14,.28)";
-      ctx.fillRect(0, 0, WIDTH, HEIGHT);
-    } else {
-      const gradient = ctx.createLinearGradient(0, 0, 0, HEIGHT);
-      gradient.addColorStop(0, "#15182b");
-      gradient.addColorStop(1, "#090a11");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, WIDTH, HEIGHT);
-      ctx.fillStyle = "rgba(255,255,255,.06)";
-      for (let i = 0; i < 22; i++) {
-        const x = (i * 137 + 31) % WIDTH;
-        const y = (i * 59 + 26) % 170;
-        ctx.fillRect(x, y, i % 3 === 0 ? 2 : 1, i % 3 === 0 ? 2 : 1);
-      }
+    const gradient = ctx.createLinearGradient(0, 0, 0, HEIGHT);
+    gradient.addColorStop(0, "#15182b");
+    gradient.addColorStop(1, "#090a11");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    ctx.fillStyle = "rgba(255,255,255,.06)";
+    for (let i = 0; i < 22; i++) {
+      const x = (i * 137 + 31) % WIDTH;
+      const y = (i * 59 + 26) % 170;
+      ctx.fillRect(x, y, i % 3 === 0 ? 2 : 1, i % 3 === 0 ? 2 : 1);
     }
   }
 
@@ -330,13 +195,19 @@
   }
 
   function drawPlayer() {
-    if (drawImageContain(assets.player, player.x, player.y, player.w, player.h)) return;
+    if (assets.player && assets.player.naturalWidth) {
+      ctx.save();
+      ctx.translate(player.x + player.w, 0);
+      ctx.scale(-1, 1);
+      drawImageContain(assets.player, 0, player.y, player.w, player.h);
+      ctx.restore();
+      return;
+    }
     ctx.fillStyle = "#ffb247";
     ctx.fillRect(player.x + 6, player.y + 8, player.w - 12, player.h - 8);
   }
 
   function drawObstacle(obstacle) {
-    if (drawImageContain(assets.obstacle, obstacle.x, obstacle.y, obstacle.w, obstacle.h)) return;
     ctx.fillStyle = "#33e0c9";
     ctx.beginPath();
     ctx.moveTo(obstacle.x + obstacle.w / 2, obstacle.y);
@@ -378,7 +249,10 @@
   document.addEventListener("keyup", (event) => { if (event.code === "ArrowDown") setDuck(false); });
   document.addEventListener("visibilitychange", () => { if (document.hidden && running && !paused) pauseGame(); });
 
-  restoreImages().finally(() => render());
+  loadImage("assets/koppecat.jpg")
+    .then((image) => { assets.player = image; })
+    .catch(() => {})
+    .finally(() => render());
   render();
   requestAnimationFrame(frame);
 })();
