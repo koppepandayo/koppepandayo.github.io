@@ -367,6 +367,7 @@ body {
 .link-x:hover { border-color: #fff; color: #fff; }
 .link-twitch:hover { border-color: #9146ff; color: #b98bff; }
 .link-medal:hover { border-color: var(--accent2); color: var(--accent2); }
+.link-mouse:hover { border-color: var(--accent); color: var(--accent); }
 
 /* Buddy card */
 .buddy-card {
