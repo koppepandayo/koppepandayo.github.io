@@ -150,6 +150,10 @@
     }
 
     _spawnPiece(colors) {
+      // Matches the SEGA educational sample this project is based on: the
+      // pair spawns just above the visible field (axis y:-1, child y:-2)
+      // and falls in -- an intentional part of the reference behavior, not
+      // a bug.
       return { colors, rot: 0, x: Math.floor(COLS / 2) - 1, y: -1 };
     }
 
