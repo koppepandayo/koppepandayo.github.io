@@ -15,15 +15,22 @@
   height: 160px;
   padding: 5px;
   background: #f7f7f7;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
   touch-action: manipulation;
   user-select: none;
 }
 
-.runner-stage .runner-container { position: relative; }
+/* Starts clipped to just the character's width (Trex.config.WIDTH) so the
+   first-jump intro -- which animates this element's width out to the full
+   track -- actually has something to reveal. Without this, the container
+   had no explicit size and just hugged its already-full-width canvas from
+   the start, making the "intro" invisible (nothing was ever cropped). */
+.runner-stage .runner-container {
+  position: relative;
+  width: 44px;
+  height: 150px;
+  overflow: hidden;
+}
 .runner-stage .runner-canvas { display: block; }
 .runner-stage .controller { position: absolute; inset: 0; z-index: 1; }
 
