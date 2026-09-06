@@ -835,33 +835,21 @@
         },
         
         /**
-         * Hides offline messaging for a fullscreen game only experience.
+         * Disabled for koppepandayo.github.io: this scales the game up to
+         * fill the whole browser viewport, which only makes sense for the
+         * original full-page Chrome offline interstitial. Here the game
+         * lives in a small fixed-size card among other page content, so
+         * doing this scaled the 600x150 canvas by several times *inside*
+         * its own small overflow:hidden box the moment you jumped for the
+         * first time -- the character appeared to shoot off-screen as the
+         * background suddenly rushed past at the enlarged scale.
          */
-        setArcadeMode() {
-            document.body.classList.add(Runner.classes.ARCADE_MODE);
-            this.setArcadeModeContainerScale();
-        },
+        setArcadeMode() {},
 
         /**
-         * Sets the scaling for arcade mode.
+         * Sets the scaling for arcade mode. Disabled (see setArcadeMode).
          */
-        setArcadeModeContainerScale() {
-            const windowHeight = window.innerHeight;
-            const scaleHeight = windowHeight / this.dimensions.HEIGHT;
-            const scaleWidth = window.innerWidth / this.dimensions.WIDTH;
-            const scale = Math.max(1, Math.min(scaleHeight, scaleWidth));
-            const scaledCanvasHeight = this.dimensions.HEIGHT * scale;
-            // Positions the game container at 10% of the available vertical window
-            // height minus the game container height.
-            const translateY = Math.ceil(Math.max(0, (windowHeight - scaledCanvasHeight -
-                                                      Runner.config.ARCADE_MODE_INITIAL_TOP_POSITION) *
-                                                  Runner.config.ARCADE_MODE_TOP_POSITION_PERCENT)) *
-                  window.devicePixelRatio;
-
-            const cssScale = scale;
-            this.containerEl.style.transform =
-                'scale(' + cssScale + ') translateY(' + translateY + 'px)';
-        },
+        setArcadeModeContainerScale() {},
         
         /**
          * Pause the game if the tab is not in focus.
