@@ -1,30 +1,39 @@
 .runner-glow { background: radial-gradient(circle, rgba(255, 178, 71, .18), rgba(124, 92, 255, .12) 48%, transparent 70%); }
-.runner-main { width: min(1100px, 100%); margin: 0 auto; padding: 20px 24px 80px; }
-.runner-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin: 0 0 20px; }
+.runner-main { width: min(1100px, 100%); margin: 0 auto; padding: 20px 24px 80px; display: flex; flex-direction: column; align-items: center; }
+.runner-heading { text-align: center; margin: 0 0 20px; }
 .runner-heading .hero-eyebrow { margin-bottom: 5px; }
 .runner-heading h1 { font-size: clamp(2rem, 6vw, 3.4rem); line-height: 1; letter-spacing: -.035em; background: linear-gradient(90deg, #ffb247, #ff6f91, var(--accent)); background-clip: text; -webkit-background-clip: text; color: transparent; }
-.runner-stats { display: flex; gap: 22px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .78rem; color: var(--text-dim); }
-.runner-stats strong { display: block; color: var(--text); font-size: 1.25rem; letter-spacing: .08em; }
-.runner-stage { position: relative; width: 100%; aspect-ratio: 3 / 1; min-height: 210px; background: #0b0c14; line-height: 0; touch-action: manipulation; user-select: none; }
-#runner-canvas { display: block; width: 100%; height: 100%; }
-.runner-overlay { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; background: rgba(8, 8, 12, .64); backdrop-filter: blur(2px); line-height: 1.4; text-align: center; }
-.runner-overlay.hidden { display: none; }
-.runner-overlay p { font-size: clamp(1.6rem, 5vw, 2.7rem); font-weight: 900; letter-spacing: .06em; }
-.runner-overlay span { color: var(--text-dim); font-size: .9rem; }
-.runner-overlay .btn { border: 0; margin-top: 4px; cursor: pointer; }
-.runner-touch { display: none; grid-template-columns: 1.4fr 1fr; gap: 10px; margin-top: 12px; }
-.runner-touch button { height: 58px; border: 1px solid var(--border); border-radius: 13px; background: var(--bg-card); color: var(--text); font-weight: 800; letter-spacing: .08em; touch-action: none; }
-.runner-touch button:active { border-color: #ffb247; transform: translateY(1px); }
+
+/* .runner-stage is handed to the game code as its container element -- it
+   creates and appends its own .runner-container/.runner-canvas inside,
+   sized up to a 600x150 base (Runner.defaultDimensions), shrinking to fit
+   narrower screens but never taller. */
+.runner-stage {
+  position: relative;
+  width: 100%;
+  max-width: 620px;
+  height: 160px;
+  padding: 5px;
+  background: #f7f7f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+.runner-stage .runner-container { position: relative; }
+.runner-stage .runner-canvas { display: block; }
+.runner-stage .controller { position: absolute; inset: 0; z-index: 1; }
+
 .runner-help { display: flex; justify-content: center; gap: 30px; margin-top: 14px; padding: 12px 18px; color: var(--text-dim); font-size: .8rem; }
 .runner-help b { color: var(--text); }
-.runner-credit { margin-top: 18px; color: var(--text-dim); font-size: .7rem; text-align: center; }
+.runner-credit { margin-top: 18px; color: var(--text-dim); font-size: .7rem; text-align: center; max-width: 620px; }
 .runner-credit a { color: var(--accent2); }
 
 @media (max-width: 720px) {
   .runner-main { padding: 10px 12px 50px; }
-  .runner-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
   .runner-heading h1 { font-size: 2rem; }
-  .runner-stage { min-height: 0; aspect-ratio: 2 / 1; }
-  .runner-touch { display: grid; }
   .runner-help { display: none; }
 }

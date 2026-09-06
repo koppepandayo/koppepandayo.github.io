@@ -27,27 +27,22 @@
 <main class="runner-main">
   <div class="runner-heading">
     <div><p class="hero-eyebrow">// koppe cat run</p><h1>CAT RUNNER</h1></div>
-    <div class="runner-stats"><span>SCORE <strong id="runner-score">00000</strong></span><span>HI <strong id="runner-high">00000</strong></span></div>
   </div>
 
-  <section class="runner-stage card" aria-label="ランナーゲーム">
-    <canvas id="runner-canvas" width="960" height="320"></canvas>
-    <div id="runner-overlay" class="runner-overlay">
-      <p id="runner-message">Ready?</p>
-      <span id="runner-result">Space・↑・タップでジャンプ</span>
-      <button id="runner-start" class="btn btn-primary" type="button">はじめる</button>
-    </div>
-  </section>
-
-  <div class="runner-touch" aria-label="モバイル操作">
-    <button id="runner-jump" type="button">JUMP</button>
-    <button id="runner-duck" type="button">DUCK</button>
+  <section class="runner-stage card" aria-label="ランナーゲーム"></section>
+  <div class="icon-offline" style="display:none"></div>
+  <div id="offline-resources" style="display:none">
+    <img id="offline-resources-1x" src="assets/runner-sprite-1x.png">
+    <img id="offline-resources-2x" src="assets/runner-sprite-2x.png">
   </div>
 
   <div class="runner-help card">
-    <span><b>Space / ↑</b> ジャンプ</span><span><b>↓</b> しゃがむ・急降下</span><span><b>P</b> ポーズ</span>
+    <span><b>Space / ↑</b> ジャンプ</span><span><b>↓</b> しゃがむ</span><span>タップでジャンプ(モバイル)</span>
   </div>
-  <p class="runner-credit"><a href="https://chromium.googlesource.com/chromium/src/+/main/components/neterror/resources/dino_game/" target="_blank" rel="noopener">Chromium Dino Game</a>の操作感を参考にした独自実装です。Chromiumのコード・画像は収録していません。</p>
+  <p class="runner-credit">
+    <a href="https://github.com/wayou/t-rex-runner" target="_blank" rel="noopener">Chromium Dino Game</a>
+    (BSD-3-Clause, <a href="https://chromium.googlesource.com/chromium/src/+/main/components/neterror/resources/dino_game/" target="_blank" rel="noopener">元はChromium</a>)のコードをベースにしています。キャラクター画像だけをこっぺ猫に差し替えています。
+  </p>
 </main>
 
 <script src="assets/js/tetris-audio.js"></script>
